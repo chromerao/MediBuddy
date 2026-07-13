@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediBuddy - 환자 상태 요약</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "outline-variant": "#bbcbb4", "on-tertiary-fixed": "#1a1c1c", "secondary-fixed-dim": "#40e348", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary": "#ffffff", tertiary: "#5d5f5f", success: "#267A52", "on-secondary-container": "#007314", "on-primary-fixed-variant": "#005320", "on-secondary-fixed-variant": "#00530c", "surface-white": "#FFFFFF", "error-container": "#ffdad6", warning: "#A85D00", "surface-container-highest": "#e2e2e2", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002202", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "on-primary-fixed": "#002109", surface: "#f9f9f9", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#2f3131", "on-tertiary-container": "#626363", outline: "#6c7b68", background: "#f9f9f9", "on-primary-container": "#00732f", "surface-container-low": "#f3f3f4", "inverse-primary": "#52e176", "primary-fixed": "#71fe8f", "surface-tint": "#006e2d", "on-surface-variant": "#3d4a39", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-error-container": "#93000a", "primary-fixed-dim": "#52e176", "secondary-fixed": "#73ff6e", primary: "#006e2d", "tertiary-fixed": "#e2e2e2", "surface-dim": "#dadada", "on-surface": "#1a1c1c", danger: "#B42318", "on-background": "#1a1c1c", "border-muted": "#CBD8D5", "surface-container-high": "#e8e8e8", "surface-variant": "#e2e2e2", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "surface-container": "#eeeeee", secondary: "#006e13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"touch-target-min": "48px", unit: "8px", gutter: "16px", "margin-page": "20px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["'Noto Sans KR'", "sans-serif"], "body-lg": ["'Noto Sans KR'", "sans-serif"], "body-xl": ["'Noto Sans KR'", "sans-serif"], "display-lg-mobile": ["'Noto Sans KR'", "sans-serif"], "question-lg": ["'Noto Sans KR'", "sans-serif"], "display-lg": ["'Noto Sans KR'", "sans-serif"], "headline-md": ["'Noto Sans KR'", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min bg-surface border-b border-outline-variant transition-colors duration-200">
+<div class="flex items-center gap-gutter"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-8 h-8 object-contain">
+<span class="font-headline-md text-headline-md font-bold" style="color: rgb(93, 255, 99);">MediBuddy</span></div>
+<button aria-label="More options" class="w-touch-target-min h-touch-target-min flex items-center justify-center hover:bg-surface-container-low rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined text-primary">more_vert</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-[calc(48px+32px)] pb-[calc(72px+32px)] px-margin-page max-w-[720px] mx-auto flex flex-col gap-[32px]">
+<!-- Source Badge -->
+<div class="flex justify-center">
+<div class="inline-flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-border-muted shadow-sm">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-md text-label-md text-on-surface-variant">환자 입력을 AI가 진료 준비용으로 정리했습니다.</span>
+</div>
+</div>
+<!-- Patient Summary Card -->
+<article class="bg-surface-white rounded-xl border border-border-muted overflow-hidden">
+<!-- Card Header -->
+<div class="bg-surface-container-low px-5 py-4 border-b border-border-muted flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<h2 class="font-question-lg text-question-lg text-on-surface">환자 김영희</h2>
+<p class="font-body-lg text-body-lg text-secondary">당뇨 재진</p>
+</div>
+</div>
+<!-- Card Body -->
+<div class="p-5 flex flex-col gap-gutter">
+<!-- Focus Point -->
+<section class="bg-error-container/20 rounded-lg p-4 border border-error-container/50">
+<div class="flex items-center gap-2 mb-2 text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+<h3 class="font-body-xl text-body-xl font-bold">오늘 꼭 말씀드릴 점</h3>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">"새벽 발 저림 증상"</p>
+</section>
+<!-- Questions List -->
+<section>
+<div class="flex items-center gap-2 mb-3 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">help_center</span>
+<h3 class="font-body-xl text-body-xl font-bold">의료진에게 물을 질문 3개</h3>
+</div>
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-border-muted">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold font-label-md text-label-md">1</span>
+<p class="font-body-lg text-body-lg text-on-surface pt-0.5">"새벽 발 저림이 당뇨 합병증인가요?"</p>
+</li>
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-border-muted">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold font-label-md text-label-md">2</span>
+<p class="font-body-lg text-body-lg text-on-surface pt-0.5">"식단 조절을 더 엄격히 해야 할까요?"</p>
+</li>
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-border-muted">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold font-label-md text-label-md">3</span>
+<p class="font-body-lg text-body-lg text-on-surface pt-0.5">"다음 진료 때 피검사가 필요한가요?"</p>
+</li>
+</ul>
+</section>
+</div>
+</article>
+<!-- Fixed Bottom CTA -->
+<div class="fixed bottom-[80px] left-0 w-full px-margin-page md:static md:bottom-auto md:w-auto md:px-0 z-40">
+<div class="max-w-[720px] mx-auto bg-surface-white/90 backdrop-blur-sm p-4 rounded-xl border border-border-muted shadow-[0_4px_24px_rgba(0,0,0,0.04)] md:bg-transparent md:border-none md:shadow-none md:p-0 md:backdrop-blur-none">
+<button class="w-full h-button-height-lg bg-primary-container text-on-primary rounded-lg font-body-xl text-body-xl font-bold flex items-center justify-center gap-2 hover:bg-primary transition-colors duration-200 active:scale-[0.98] active:bg-tertiary-container shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
+                    진료 시작 (녹음 동의 포함)
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-lowest border-t border-outline-variant shadow-sm hidden md:flex md:top-0 md:bottom-auto md:w-auto md:right-0 md:left-auto md:h-touch-target-min md:border-t-0 md:border-none md:bg-transparent md:shadow-none md:px-margin-page md:gap-4 lg:hidden">
+<!-- This is hidden on desktop by default in shared components rules, but required by JSON structurally. Applied structural rules to position it relatively well if visible, but standard responsive rules imply bottom nav is for mobile. -->
+</nav>
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-lowest border-t border-outline-variant shadow-sm md:hidden">
+<!-- Tab 1: Home (Active based on context of 'Patient Summary' usually accessed from home/dashboard) -->
+<a aria-current="page" class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 Active: scale-95 transition-transform duration-150 hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">홈</span>
+</a>
+<!-- Tab 2: Medical Notes -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<span class="font-label-md text-label-md text-on-surface-variant">의료수첩</span>
+</a>
+<!-- Tab 3: Family -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">family_restroom</span>
+<span class="font-label-md text-label-md text-on-surface-variant">가족</span>
+</a>
+</nav>
+<!-- Desktop Navigation (Alternative Top Right) -->
+<nav class="hidden md:flex fixed top-0 right-0 z-50 h-touch-target-min items-center px-margin-page gap-4 bg-transparent border-none">
+<a class="flex items-center gap-2 text-primary hover:bg-surface-container-low px-4 py-2 rounded-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md font-bold">홈</span>
+</a>
+<a class="flex items-center gap-2 text-on-surface-variant hover:bg-surface-container-low px-4 py-2 rounded-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<span class="font-label-md text-label-md">의료수첩</span>
+</a>
+<a class="flex items-center gap-2 text-on-surface-variant hover:bg-surface-container-low px-4 py-2 rounded-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">family_restroom</span>
+<span class="font-label-md text-label-md">가족</span>
+</a>
+</nav>
+
+
+
+
+</body></html>

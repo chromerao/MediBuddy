@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>가족 목록 - 공유 관리</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-primary": "#ffffff", "primary-fixed-dim": "#52e176", "surface-dim": "#dadada", "on-primary-fixed": "#002109", "on-secondary-container": "#007314", surface: "#f9f9f9", error: "#ba1a1a", "outline-variant": "#bbcbb4", "inverse-surface": "#2f3131", "surface-container-lowest": "#ffffff", "on-tertiary": "#ffffff", "surface-tint": "#006e2d", "primary-fixed": "#71fe8f", "surface-container-highest": "#e2e2e2", "primary-container": "#6ffc8d", "on-primary-fixed-variant": "#005320", "border-muted": "#CBD8D5", "error-container": "#ffdad6", "surface-white": "#FFFFFF", "on-tertiary-container": "#626363", secondary: "#006e13", "on-background": "#1a1c1c", "on-surface-variant": "#3d4a39", "inverse-on-surface": "#f0f1f1", "surface-bright": "#f9f9f9", danger: "#B42318", "surface-container-low": "#f3f3f4", "secondary-fixed-dim": "#40e348", outline: "#6c7b68", "on-secondary-fixed-variant": "#00530c", "tertiary-container": "#e0e0e0", "tertiary-fixed-dim": "#c6c6c7", "secondary-fixed": "#73ff6e", warning: "#A85D00", "secondary-container": "#5ffe5f", "on-tertiary-fixed": "#1a1c1c", "on-tertiary-fixed-variant": "#454747", "on-error": "#ffffff", tertiary: "#5d5f5f", "tertiary-fixed": "#e2e2e2", background: "#f9f9f9", "on-secondary": "#ffffff", primary: "#006e2d", "on-secondary-fixed": "#002202", "surface-container": "#eeeeee", "surface-variant": "#e2e2e2", "surface-container-high": "#e8e8e8", "on-error-container": "#93000a", "on-primary-container": "#00732f", success: "#267A52", "inverse-primary": "#52e176", "on-surface": "#1a1c1c"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "8px", "margin-page": "20px", gutter: "16px", "touch-target-min": "48px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], "display-lg-mobile": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}], "display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .ambient-shadow {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col md:items-center">
+<!-- Screen Container for Tablet/Desktop centering -->
+<div class="w-full max-w-[720px] flex flex-col min-h-screen relative bg-surface md:border-x md:border-border-muted">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-on-tertiary-container md:max-w-[720px] md:left-1/2 md:-translate-x-1/2">
+<div class="flex items-center gap-gutter">
+<button aria-label="Go back" class="h-touch-target-min w-touch-target-min flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors duration-200">
+<span class="material-symbols-outlined text-[24px] text-on-surface">arrow_back</span>
+</button>
+</div>
+<div class="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-8 h-8 object-cover">
+  <h1 class="font-headline-md text-headline-md font-bold dark:text-primary-fixed-dim text-on-primary-container" style="color: rgb(93, 255, 99);">MediBuddy</h1>
+</div>
+<div class="flex items-center">
+<button aria-label="More options" class="h-touch-target-min w-touch-target-min flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors duration-200">
+<span class="material-symbols-outlined text-[24px] text-primary dark:text-primary-fixed-dim">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 mt-touch-target-min mb-[100px] px-margin-page py-8 flex flex-col gap-8">
+<section class="flex flex-col gap-4">
+<h2 class="font-question-lg text-question-lg text-on-surface">연결된 가족</h2>
+<div class="flex flex-col gap-4">
+<!-- Family Member Card 1 -->
+<div class="bg-surface-white rounded-xl border border-border-muted p-5 flex items-center justify-between hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A warm, brightly lit portrait photo of a young Korean woman in her 30s with a soft smile, wearing a casual beige sweater. The background is a soft, blurred domestic setting emphasizing a comforting and reassuring atmosphere. High quality, clear, modern light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIT7gH-eKJlPZe7tWGzJ6WuS0QqRHCh-u6vAG_2Mc_CEzJJ1mU9iRLRNTVyv2h33x5srpFiztHQ50lvm4bz3ubjcvVJEaMldzQk6rGlWnIGwiU9k-E7-bkS0DiNHz7UuhntsjAZsm-tQUhx0oXXd7YXidzPXWx90SMfA6_NkQGDKt3G6FHHAkZcx-URUIRBhopEnIq-diuatPkJnMzep__v22gaq-N2pco_wZDcK_HUoWQpdVFLbmQ">
+</div>
+<div class="flex flex-col">
+<span class="font-body-xl text-body-xl text-on-surface">딸 (김수진)</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">최근 확인: 오늘 오전 10:30</span>
+</div>
+</div>
+<div class="px-4 py-1.5 rounded-full bg-primary-container/10 border border-primary-container flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-primary-container">공유 중</span>
+</div>
+</div>
+<!-- Family Member Card 2 -->
+<div class="bg-surface-white rounded-xl border border-border-muted p-5 flex items-center justify-between hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A warm, brightly lit portrait photo of a young Korean man in his 30s with a gentle smile, wearing a casual light blue button-down shirt. The background is a soft, out-of-focus home environment suggesting safety and care. High quality, clear, modern light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxhrY-7a7W8RHJxuequFwCBwuuz0H2A511uynaZi6E0tYgHo1fXSOLHPhcuQN1Nbmb760gRyrHtYTA-x-PPE0XQoRRlJs9aU89HqzfbenuBQrUJWg6saLsA3LUTmLMvBqu0ouhXR8o16TzHPnyIJMrJsrJizkx7tvByO-Jij8k0N8NDLphEopypy9BMw_fcQrN8YnMMkMQauOyaNvny5o4wtzuuS97tjVPP6FhBaa1D1bwdJ2Utf21">
+</div>
+<div class="flex flex-col">
+<span class="font-body-xl text-body-xl text-on-surface">아들 (김정훈)</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">최근 확인: 어제 오후 2:15</span>
+</div>
+</div>
+<div class="px-4 py-1.5 rounded-full bg-primary-container/10 border border-primary-container flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-primary-container">공유 중</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Sticky CTA -->
+<div class="fixed bottom-[80px] md:bottom-[80px] left-0 w-full px-margin-page pb-4 pt-8 bg-gradient-to-t from-surface via-surface to-transparent md:max-w-[720px] md:left-1/2 md:-translate-x-1/2 z-40">
+<button class="w-full h-button-height-lg bg-primary-container text-on-primary rounded-xl font-body-xl text-body-xl flex items-center justify-center gap-2 ambient-shadow hover:bg-on-primary-fixed-variant transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
+                가족 초대하기
+            </button>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant dark:border-on-tertiary-container shadow-sm dark:shadow-none md:hidden h-[72px]">
+<a aria-label="홈" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-transform duration-150 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-label-md text-[12px] leading-tight">홈</span>
+</a>
+<a aria-label="의료수첩" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-transform duration-150 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">medical_services</span>
+<span class="font-label-md text-[12px] leading-tight">의료수첩</span>
+</a>
+<a aria-label="가족 (현재 페이지)" class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-on-primary-fixed-variant rounded-xl px-4 py-1 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">family_restroom</span>
+<span class="font-label-md text-[12px] leading-tight font-bold">가족</span>
+</a>
+</nav>
+</div>
+
+
+
+
+
+
+</body></html>

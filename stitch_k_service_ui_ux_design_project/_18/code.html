@@ -1,0 +1,204 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#f9f9f9",
+                      "on-tertiary-container": "#626363",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "tertiary-fixed": "#e2e2e2",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "tertiary": "#5d5f5f",
+                      "surface-container-highest": "#e2e2e2",
+                      "primary-fixed": "#71fe8f",
+                      "on-surface": "#1a1c1c",
+                      "tertiary-container": "#e0e0e0",
+                      "primary-container": "#6ffc8d",
+                      "secondary-fixed-dim": "#40e348",
+                      "surface-variant": "#e2e2e2",
+                      "surface-container-high": "#e8e8e8",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#eeeeee",
+                      "primary-fixed-dim": "#52e176",
+                      "on-background": "#1a1c1c",
+                      "secondary": "#006e13",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed-variant": "#005320",
+                      "inverse-primary": "#52e176",
+                      "secondary-fixed": "#73ff6e",
+                      "on-primary-container": "#00732f",
+                      "on-secondary-container": "#007314",
+                      "primary": "#006e2d",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "on-surface-variant": "#3d4a39",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#bbcbb4",
+                      "on-secondary-fixed-variant": "#00530c",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#2f3131",
+                      "outline": "#6c7b68",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f3f3f4",
+                      "secondary-container": "#5ffe5f",
+                      "inverse-on-surface": "#f0f1f1",
+                      "surface-dim": "#dadada",
+                      "on-secondary-fixed": "#002202",
+                      "on-tertiary": "#ffffff",
+                      "surface": "#f9f9f9",
+                      "surface-tint": "#006e2d",
+                      "on-primary-fixed": "#002109",
+                      "surface-bright": "#f9f9f9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "unit": "8px",
+                      "margin-page": "20px",
+                      "touch-target-min": "48px",
+                      "button-height-lg": "56px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "body-xl": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "question-lg": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "body-lg": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "display-lg-mobile": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "display-lg": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ],
+                      "label-md": [
+                              "Noto Sans KR", "Noto Sans", "sans-serif"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "26px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-xl": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "question-lg": [
+                              "22px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "44px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      }catch(_e){}</script></head><body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+
+    <div class="w-full max-w-[720px] bg-surface min-h-screen flex flex-col relative shadow-sm border-x border-surface-variant">
+        
+        <!-- TopAppBar -->
+        <header class="w-full top-0 sticky bg-background border-b border-surface-variant flex justify-between items-center px-margin-page h-button-height-lg z-10 flat no shadows">
+            <div class="flex items-center gap-2 hover:bg-surface-container-low transition-colors rounded p-1 active:scale-95 transition-transform cursor-pointer"><img src="https://lh3.googleusercontent.com/aida/AP1WRLvantWAv1abDV5HAuKqpyRk_YRtW8UqHtPHMDl9_W1mvqcyY2ci6jXIugO1-R2h8M39ddlGGgxX1ZNe-_bl8MMfZuMp_ME1FJ3eDZEkVsBum3z3TpQTIctBjoiJsfv97MikXgvFgEkk9k4TYVq9LCE7tazRxh8_vCvpO-Xgh8SWcDYRON2jCGwXudRyEAanQ-ljCl8qH6oB32Y4mvOTW5kFgKILAs_SwzbcPGznljOI6j_AvN52LsAOt8g" alt="MediBuddy Logo" class="w-8 h-8 object-contain">
+<span class="font-headline-md text-headline-md font-bold" style="color: rgb(93, 255, 99);">MediBuddy</span></div>
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden hover:bg-surface-container-low transition-colors active:scale-95 transition-transform cursor-pointer border border-surface-variant">
+                    <span class="material-symbols-outlined text-on-surface-variant">person</span>
+                    <span class="sr-only">User profile</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col px-margin-page py-8 pb-32">
+            
+            <div class="flex-1 flex flex-col justify-center items-center text-center space-y-8 mt-4">
+                
+                <!-- Icon/Illustration Area -->
+                <div class="w-32 h-32 rounded-full bg-surface-container-lowest border border-surface-variant shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex items-center justify-center pulse-ring mb-4">
+                    <span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'FILL' 1;">mic</span>
+                </div>
+
+                <!-- Headline & Copy -->
+                <div class="space-y-4">
+                    <h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface">진료 기록을<br>도와드릴까요?</h1>
+                    <p class="font-body-xl text-body-xl text-on-surface-variant">
+                        지금부터 진료 내용을 녹음해요.<br>
+                        기억 확인이 끝나면 원본은 바로 삭제돼요.
+                    </p>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="w-full max-w-sm mt-8 space-y-4">
+                    <div class="bg-surface-container-lowest rounded-xl border border-surface-variant p-5 flex items-start gap-4">
+                        <span class="material-symbols-outlined text-primary mt-1" style="font-variation-settings: 'FILL' 1;">security</span>
+                        <div class="text-left">
+                            <h3 class="font-question-lg text-question-lg text-on-surface mb-1">안전한 데이터 관리</h3>
+                            <p class="font-body-lg text-body-lg text-on-surface-variant">녹음된 음성은 요약 즉시 기기에서 영구 삭제되며 외부로 유출되지 않아요.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest rounded-xl border border-surface-variant p-5 flex items-start gap-4">
+                        <span class="material-symbols-outlined text-primary mt-1" style="font-variation-settings: 'FILL' 1;">description</span>
+                        <div class="text-left">
+                            <h3 class="font-question-lg text-question-lg text-on-surface mb-1">정확한 요약 제공</h3>
+                            <p class="font-body-lg text-body-lg text-on-surface-variant">의사 선생님의 중요한 말씀을 놓치지 않게 핵심만 정리해 드려요.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Fixed Bottom Action Area -->
+        </div></body></html>

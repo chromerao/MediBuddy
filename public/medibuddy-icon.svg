@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="메디버디">
+  <rect width="512" height="512" rx="112" fill="#7BED8D"/>
+  <path d="M256 389c-17-15-96-75-130-116-48-58-16-145 57-145 36 0 60 20 73 44 13-24 37-44 73-44 73 0 105 87 57 145-34 41-113 101-130 116Z" fill="#14351F"/>
+  <path d="M168 255h58l20-50 31 98 20-48h47" fill="none" stroke="#7BED8D" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

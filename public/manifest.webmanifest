@@ -1,0 +1,18 @@
+{
+  "name": "메디버디",
+  "short_name": "메디버디",
+  "description": "진료 준비부터 진료 후 기억 확인까지 함께하는 AI 진료 동행 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9f9f9",
+  "theme_color": "#7bed8d",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/medibuddy-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

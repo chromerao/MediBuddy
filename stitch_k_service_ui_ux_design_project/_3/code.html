@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediBuddy - 증상 입력</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "outline-variant": "#bbcbb4", "on-tertiary-fixed": "#1a1c1c", "secondary-fixed-dim": "#40e348", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary": "#ffffff", tertiary: "#5d5f5f", success: "#267A52", "on-secondary-container": "#007314", "on-primary-fixed-variant": "#005320", "on-secondary-fixed-variant": "#00530c", "surface-white": "#FFFFFF", "error-container": "#ffdad6", warning: "#A85D00", "surface-container-highest": "#e2e2e2", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002202", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "on-primary-fixed": "#002109", surface: "#f9f9f9", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#2f3131", "on-tertiary-container": "#626363", outline: "#6c7b68", background: "#f9f9f9", "on-primary-container": "#00732f", "surface-container-low": "#f3f3f4", "inverse-primary": "#52e176", "primary-fixed": "#71fe8f", "surface-tint": "#006e2d", "on-surface-variant": "#3d4a39", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-error-container": "#93000a", "primary-fixed-dim": "#52e176", "secondary-fixed": "#73ff6e", primary: "#006e2d", "tertiary-fixed": "#e2e2e2", "surface-dim": "#dadada", "on-surface": "#1a1c1c", danger: "#B42318", "on-background": "#1a1c1c", "border-muted": "#CBD8D5", "surface-container-high": "#e8e8e8", "surface-variant": "#e2e2e2", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "surface-container": "#eeeeee", secondary: "#006e13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"touch-target-min": "48px", unit: "8px", gutter: "16px", "margin-page": "20px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "display-lg-mobile": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f7faf9;
+        }
+        
+        /* Pulse Animation for Voice Input */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+        
+        @keyframes pulse-ring-outer {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        .mic-pulse-inner {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+        
+        .mic-pulse-outer {
+            animation: pulse-ring-outer 2s infinite ease-in-out;
+            animation-delay: 0.5s;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col pt-[56px] pb-[80px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-headline-md text-headline-md docked full-width top-0 border-b border-outline-variant dark:border-on-tertiary-container flat no shadows transition-colors duration-200 fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min">
+<div class="flex items-center gap-unit">
+<div class="w-[32px] h-[32px] rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-full h-full object-cover"></div>
+<span class="font-headline-md text-headline-md font-bold text-secondary-fixed dark:text-primary-fixed-dim">MediBuddy</span>
+</div>
+<button class="h-touch-target-min w-touch-target-min flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col px-margin-page pt-gutter max-w-[720px] mx-auto w-full relative z-10">
+<!-- Instruction Text -->
+<div class="mt-[40px] mb-[60px] text-center">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-unit whitespace-pre-line">요즘 불편한 점이나 
+선생님께 말씀드리고 싶은 내용을
+말씀해 주세요.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">자연스럽게 이야기하듯 말씀하셔도 괜찮습니다.</p>
+</div>
+<!-- Voice Input Area -->
+<div class="flex-grow flex flex-col items-center justify-center relative min-h-[300px]">
+<!-- Visualization / Pulse Rings -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="absolute w-[160px] h-[160px] rounded-full bg-primary-container mic-pulse-outer"></div>
+<div class="absolute w-[120px] h-[120px] rounded-full bg-primary-container mic-pulse-inner"></div>
+</div>
+<!-- Microphone Button -->
+<button class="relative z-10 w-[100px] h-[100px] rounded-full bg-primary flex items-center justify-center shadow-md hover:bg-surface-tint transition-colors focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-outline-variant border border-transparent" id="micButton">
+<span class="material-symbols-outlined text-[48px] text-on-primary" data-icon="mic" data-weight="fill" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+<p class="mt-gutter font-body-xl text-body-xl text-primary font-bold">말하기</p>
+<p class="mt-unit font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant">듣고 있습니다...</p>
+</div>
+<!-- Text Input Alternative -->
+<div class="mt-auto mb-gutter w-full pt-gutter">
+<button class="w-full h-button-height-lg rounded-xl border border-primary text-primary font-label-md text-label-md flex items-center justify-center gap-unit hover:bg-surface-container-low transition-colors bg-transparent">
+<span class="material-symbols-outlined" data-icon="edit_document">edit_document</span>
+                글로 직접 입력하기
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on md, visible on mobile) -->
+<!-- Content logic requires navigation suppression for transactional/focused tasks. 
+         However, the prompt asks to design the screen. In a focused input screen, bottom nav is usually suppressed. 
+         Following the 'Shell Visibility & Relevance' mandate: Task-focused pages should suppress navigation.
+         I will NOT render the BottomNavBar to prioritize the focused input task, as per the semantic shell mandate.
+    -->
+<script>
+        // Simple micro-interaction for the mic button
+        document.addEventListener('DOMContentLoaded', () => {
+            const micBtn = document.getElementById('micButton');
+            let isRecording = true;
+
+            micBtn.addEventListener('click', () => {
+                const icon = micBtn.querySelector('.material-symbols-outlined');
+                const innerPulse = document.querySelector('.mic-pulse-inner');
+                const outerPulse = document.querySelector('.mic-pulse-outer');
+                const statusText = micBtn.nextElementSibling.nextElementSibling;
+
+                if (isRecording) {
+                    // Stop recording state
+                    icon.textContent = 'mic_off';
+                    micBtn.classList.remove('bg-primary');
+                    micBtn.classList.add('bg-tertiary-container');
+                    innerPulse.style.animation = 'none';
+                    outerPulse.style.animation = 'none';
+                    innerPulse.style.opacity = '0';
+                    outerPulse.style.opacity = '0';
+                    statusText.textContent = '녹음 일시정지';
+                    statusText.classList.replace('bg-surface-container-high', 'bg-surface-variant');
+                } else {
+                    // Start recording state
+                    icon.textContent = 'mic';
+                    micBtn.classList.add('bg-primary');
+                    micBtn.classList.remove('bg-tertiary-container');
+                    innerPulse.style.animation = 'pulse-ring 2s infinite ease-in-out';
+                    outerPulse.style.animation = 'pulse-ring-outer 2s infinite ease-in-out';
+                    outerPulse.style.animationDelay = '0.5s';
+                    innerPulse.style.opacity = '0.8';
+                    outerPulse.style.opacity = '0.5';
+                    statusText.textContent = '듣고 있습니다...';
+                    statusText.classList.replace('bg-surface-variant', 'bg-surface-container-high');
+                }
+                isRecording = !isRecording;
+            });
+        });
+    </script>
+
+
+
+
+</body></html>

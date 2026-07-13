@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediBuddy - 진료 기록 중</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "outline-variant": "#bbcbb4", "on-tertiary-fixed": "#1a1c1c", "secondary-fixed-dim": "#40e348", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary": "#ffffff", tertiary: "#5d5f5f", success: "#267A52", "on-secondary-container": "#007314", "on-primary-fixed-variant": "#005320", "on-secondary-fixed-variant": "#00530c", "surface-white": "#FFFFFF", "error-container": "#ffdad6", warning: "#A85D00", "surface-container-highest": "#e2e2e2", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002202", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "on-primary-fixed": "#002109", surface: "#f9f9f9", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#2f3131", "on-tertiary-container": "#626363", outline: "#6c7b68", background: "#f9f9f9", "on-primary-container": "#00732f", "surface-container-low": "#f3f3f4", "inverse-primary": "#52e176", "primary-fixed": "#71fe8f", "surface-tint": "#006e2d", "on-surface-variant": "#3d4a39", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-error-container": "#93000a", "primary-fixed-dim": "#52e176", "secondary-fixed": "#73ff6e", primary: "#006e2d", "tertiary-fixed": "#e2e2e2", "surface-dim": "#dadada", "on-surface": "#1a1c1c", danger: "#B42318", "on-background": "#1a1c1c", "border-muted": "#CBD8D5", "surface-container-high": "#e8e8e8", "surface-variant": "#e2e2e2", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "surface-container": "#eeeeee", secondary: "#006e13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"touch-target-min": "48px", unit: "8px", gutter: "16px", "margin-page": "20px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "display-lg-mobile": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .ambient-shadow { box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.04); }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased flex justify-center min-h-screen relative overflow-x-hidden">
+<!-- Mobile Container (Max 720px for tablets, full width on mobile) -->
+<div class="w-full max-w-[720px] bg-background min-h-screen relative shadow-sm mx-auto">
+<!-- TopAppBar (from JSON, executing styles) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-on-tertiary-container flat no shadows max-w-[720px] left-1/2 -translate-x-1/2">
+<!-- Leading Avatar -->
+<div class="w-[36px] h-[36px] rounded-full overflow-hidden border border-border-muted flex-shrink-0">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly, smiling senior user with silver hair, shot against a bright, clean, minimalist clinical background. Warm, reassuring lighting with a light-mode aesthetic. High quality, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW9MGzUlRpw6ZnoFVOCZOguh2XY0PERnG8ypHsvhCBmfwL55EetNG06fPstya8hNzaINtpupht71g9MAPuB8y54kh54r8XZ4344a12BxoHF7Vo2_0bW-u67C0zbjg9FgZGZ6diC_35uL1ZZ4st_KBSkT2dWjNqoFOInWJraVXElEHlWYdjPWKps3bTnZ92mrvkh8x2gAiZR-I8SPDO49oTiSwkWvGq_bwjQwOLiaQwyCB3RZM3cE31">
+</div>
+<!-- Headline -->
+<h1 class="font-headline-md text-headline-md font-bold dark:text-primary-fixed-dim absolute left-1/2 -translate-x-1/2 flex items-center" style="color: rgb(93, 255, 99);"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="inline-block w-[36px] h-[36px] mr-2 align-middle">
+                MediBuddy
+            </h1>
+<!-- Trailing Icon -->
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-end text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 -mr-2 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary">
+<span class="material-symbols-outlined pointer-events-none">more_vert</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="pt-[96px] pb-[220px] px-margin-page flex flex-col gap-[40px]">
+<!-- 1. Top: Recording Status Header -->
+<section class="flex flex-col items-center justify-center text-center mt-6 animate-[fadeIn_0.5s_ease-out]">
+<!-- Pulse Indicator -->
+<div class="inline-flex items-center gap-2 bg-error-container text-on-error-container px-4 py-2 rounded-full mb-6">
+<span class="relative flex h-[10px] w-[10px]">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+<span class="relative inline-flex rounded-full h-[10px] w-[10px] bg-error"></span>
+</span>
+<span class="font-label-md text-label-md">진료 녹음 중</span>
+</div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-on-surface break-keep leading-tight">
+                    진료 내용을<br>기록 중입니다.
+                </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-4 break-keep max-w-[80%]">
+                    편안하게 대화를 나누시면, 중요한 내용을 AI가 정리해 드립니다.
+                </p>
+</section>
+<!-- 2. Middle: Question Cards (Bento/Card Grid style for clarity) -->
+<section class="flex flex-col gap-gutter w-full">
+<h3 class="font-body-xl text-body-xl text-primary font-bold mb-2 ml-1">이번 진료 핵심 포인트</h3>
+<!-- Card 1 -->
+<div class="glass-card border border-border-muted rounded-[24px] p-[24px] shadow-sm flex items-start gap-4 transition-transform active:scale-[0.98]">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div class="flex-1">
+<p class="font-question-lg text-question-lg text-on-surface break-keep">
+                            처방받은 약의 복용 방법과 부작용은 무엇인가요?
+                        </p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card border border-border-muted rounded-[24px] p-[24px] shadow-sm flex items-start gap-4 transition-transform active:scale-[0.98]">
+<div class="w-12 h-12 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+</div>
+<div class="flex-1">
+<p class="font-question-lg text-question-lg text-on-surface break-keep">
+                            다음 방문 일정과 그 전에 주의할 점은 무엇인가요?
+                        </p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card border border-border-muted rounded-[24px] p-[24px] shadow-sm flex items-start gap-4 transition-transform active:scale-[0.98]">
+<div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">vital_signs</span>
+</div>
+<div class="flex-1">
+<p class="font-question-lg text-question-lg text-on-surface break-keep">
+                            일상 생활에서 특히 조심해야 할 습관이 있나요?
+                        </p>
+</div>
+</div>
+</section>
+</main>
+<!-- 3 & 4. Bottom Fixed Area: Recording Banner & Primary CTA -->
+<!-- Note: Navigation shell is suppressed here because this is a focused, transactional journey (recording a consultation). -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[720px] bg-surface-white/95 backdrop-blur-md px-margin-page pb-[32px] pt-[24px] ambient-shadow z-40 flex flex-col gap-[20px] border-t border-border-muted rounded-t-[32px]">
+<!-- Recording Banner (Timer) -->
+<div class="flex items-center justify-center gap-3">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-error text-[28px]" style="font-variation-settings: 'FILL' 1;">mic</span>
+</div>
+<span class="font-display-lg-mobile text-display-lg-mobile font-bold text-on-surface tabular-nums tracking-wide" id="recording-timer">07:02</span>
+</div>
+<!-- Primary CTA -->
+<button class="w-full h-button-height-lg bg-primary rounded-xl flex items-center justify-center font-body-xl text-body-xl font-bold text-on-primary shadow-sm hover:bg-surface-tint transition-colors active:scale-[0.98] ring-offset-2 focus:ring-2 focus:ring-primary">
+                진료 종료
+            </button>
+</div>
+</div>
+<script>
+        // Simple timer logic for demonstration of micro-interaction
+        document.addEventListener('DOMContentLoaded', () => {
+            const timerElement = document.getElementById('recording-timer');
+            let totalSeconds = (3 * 60) + 45; // Start at 03:45
+
+            setInterval(() => {
+                totalSeconds++;
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                
+                const formattedMinutes = String(minutes).padStart(2, '0');
+                const formattedSeconds = String(seconds).padStart(2, '0');
+                
+                timerElement.textContent = `${formattedMinutes}:${formattedSeconds}`;
+            }, 1000);
+        });
+    </script>
+
+
+
+
+</body></html>

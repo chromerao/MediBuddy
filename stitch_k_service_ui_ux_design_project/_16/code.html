@@ -1,0 +1,162 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>가족 - 공유 기록 확인</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-fixed": "#71fe8f", surface: "#f9f9f9", primary: "#006e2d", "on-secondary-fixed": "#002202", "surface-bright": "#f9f9f9", "on-tertiary-fixed-variant": "#454747", warning: "#A85D00", "outline-variant": "#bbcbb4", "inverse-primary": "#52e176", "secondary-fixed": "#73ff6e", "surface-tint": "#006e2d", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary-fixed-variant": "#00530c", "on-error": "#ffffff", "on-secondary": "#ffffff", danger: "#B42318", "surface-white": "#FFFFFF", "on-tertiary": "#ffffff", "on-primary-container": "#00732f", "border-muted": "#CBD8D5", "on-surface-variant": "#3d4a39", success: "#267A52", "on-primary": "#ffffff", "surface-container": "#eeeeee", "inverse-on-surface": "#f0f1f1", "on-background": "#1a1c1c", "surface-dim": "#dadada", "inverse-surface": "#2f3131", "surface-container-lowest": "#ffffff", "secondary-container": "#5ffe5f", "surface-variant": "#e2e2e2", "surface-container-low": "#f3f3f4", "surface-container-highest": "#e2e2e2", "on-surface": "#1a1c1c", "tertiary-container": "#e0e0e0", tertiary: "#5d5f5f", "error-container": "#ffdad6", "on-primary-fixed": "#002109", background: "#f9f9f9", "secondary-fixed-dim": "#40e348", "on-tertiary-container": "#626363", error: "#ba1a1a", secondary: "#006e13", "primary-fixed-dim": "#52e176", "on-error-container": "#93000a", "on-tertiary-fixed": "#1a1c1c", "on-primary-fixed-variant": "#005320", "surface-container-high": "#e8e8e8", outline: "#6c7b68", "tertiary-fixed": "#e2e2e2", "on-secondary-container": "#007314"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-page": "20px", unit: "8px", gutter: "16px", "touch-target-min": "48px", "button-height-lg": "56px"}, fontFamily: {"display-lg-mobile": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "label-md": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f7faf9; }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface pb-[80px] md:pb-0 pt-[60px] md:pt-[70px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-on-tertiary-container fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min transition-colors duration-200 hidden md:flex">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden flex-shrink-0"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-full h-full object-cover"></div>
+<h1 class="font-headline-md text-headline-md font-bold dark:text-primary-fixed-dim text-primary">MediBuddy</h1>
+</div>
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">more_vert</span>
+</button>
+</header>
+<main class="max-w-[720px] mx-auto px-margin-page py-gutter flex flex-col gap-8">
+<!-- Profile Header -->
+<section class="flex flex-col items-center mt-4">
+<div class="w-24 h-24 rounded-full border-2 border-primary-container overflow-hidden bg-surface-container-high shadow-sm mb-4">
+<img class="w-full h-full object-cover" data-alt="A warm, approachable portrait of an elderly Korean woman, aged around 65, smiling softly. The image is brightly lit with natural, soft sunlight conveying a reassuring and clear medical-app aesthetic. She is wearing comfortable, modern casual clothing in soft neutral tones, set against a pristine white background. The overall style is clean, empathetic, and human-centric." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBebgIj1Z9ZaEUYNX8Lh63kdT6b0Zxs4sBe7qCkY9YCoBmmjJ4fK3yDdXO-Atz6wTeZUtISHUpiBEc4rZQoa4ePXb4UpCgZ7yVZvTy9ukJRAyRDUoJmj7ULnxo7MRjWN8XU5GlZ0fnu1Y6rzTeP12En3EjMiwqHw3g_JQ-AAVTWqQEkyrZ7rJTMV3BvUfrQdbdjAUpHjUHJB9wVDDbQAgfb06nE-SDf-D42W7PjLsjH2HCZ_puBzLR">
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">어머니 (김영희)</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">공유받은 진료 기록</p>
+</section>
+<!-- Visit Summary Card -->
+<section class="bg-surface-white rounded-xl border border-border-muted p-5 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary-container opacity-5 rounded-bl-full pointer-events-none"></div>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary-container">local_hospital</span>
+</div>
+<div>
+<h3 class="font-body-xl text-body-xl text-on-surface">성모병원</h3>
+<p class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span> 2023년 10월 25일
+                     </p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-border-muted rounded-lg p-4">
+<p class="font-body-lg text-body-lg text-on-surface">고혈압 관리를 위한 정기 검진입니다. 혈압이 약간 높게 측정되었으나 관리 가능한 범위 내에 있습니다.</p>
+</div>
+</section>
+<!-- Prepared Questions -->
+<section class="bg-surface-white rounded-xl border border-border-muted p-5 shadow-sm">
+<h3 class="font-question-lg text-question-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">help</span>
+                준비했던 질문들
+            </h3>
+<ul class="flex flex-col gap-3">
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-surface-variant">
+<span class="material-symbols-outlined text-primary-container mt-1">format_list_bulleted</span>
+<span class="font-body-lg text-body-lg text-on-surface">아침 약의 복용량을 조절해야 하나요?</span>
+</li>
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-surface-variant">
+<span class="material-symbols-outlined text-primary-container mt-1">format_list_bulleted</span>
+<span class="font-body-lg text-body-lg text-on-surface">점심 식사 후 가벼운 어지러움이 느껴지는데 괜찮은가요?</span>
+</li>
+<li class="flex items-start gap-3 bg-surface p-3 rounded-lg border border-surface-variant">
+<span class="material-symbols-outlined text-primary-container mt-1">format_list_bulleted</span>
+<span class="font-body-lg text-body-lg text-on-surface">가벼운 근력 운동을 일과에 추가해도 될까요?</span>
+</li>
+</ul>
+</section>
+<!-- Memory Check Results -->
+<section class="bg-surface-white rounded-xl border border-border-muted p-5 shadow-sm">
+<h3 class="font-question-lg text-question-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">fact_check</span>
+                진료 기억 확인 결과
+            </h3>
+<div class="flex flex-col gap-4">
+<!-- Success Item -->
+<div class="flex items-start gap-4 p-4 bg-[#f0f9f4] border border-[#a3d9b8] rounded-lg">
+<div class="w-8 h-8 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-surface-white">check</span>
+</div>
+<div>
+<span class="inline-block px-2 py-1 bg-surface-white rounded-full font-label-md text-label-md text-success border border-[#a3d9b8] mb-2 text-sm">잘 기억하고 계세요</span>
+<p class="font-body-lg text-body-lg text-on-surface font-medium">"식후 30분에 약 복용"</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">의사 선생님과 상담한 약 복용 시간을 정확하게 기억하고 계십니다.</p>
+</div>
+</div>
+<!-- Warning Item -->
+<div class="flex items-start gap-4 p-4 bg-[#fff8ef] border border-[#f0cfa3] rounded-lg">
+<div class="w-8 h-8 rounded-full bg-warning flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-surface-white">priority_high</span>
+</div>
+<div>
+<span class="inline-block px-2 py-1 bg-surface-white rounded-full font-label-md text-label-md text-warning border border-[#f0cfa3] mb-2 text-sm">다시 확인해 보세요</span>
+<p class="font-body-lg text-body-lg text-on-surface font-medium">"일주일에 3번 운동"</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">운동 횟수에 대해 약간의 혼동이 있었습니다. 다음 진료 때 다시 확인이 필요합니다.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Send Encouragement -->
+<section class="bg-surface-white rounded-xl border border-border-muted p-5 shadow-sm">
+<h3 class="font-question-lg text-question-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">favorite</span>
+                응원 한마디 보내기
+            </h3>
+<div class="flex flex-col gap-4">
+<div class="relative">
+<label class="sr-only" for="encouragement-msg">Message for mother</label>
+<textarea class="w-full p-4 rounded-lg border border-border-muted bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-lg text-body-lg resize-none" id="encouragement-msg" placeholder="어머니께 따뜻한 응원의 메시지를 남겨주세요..." rows="3"></textarea>
+</div>
+<button class="h-button-height-lg w-full bg-primary-container text-surface-white font-body-xl text-body-xl rounded-lg flex items-center justify-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">send</span>
+                    메시지 보내기
+                </button>
+</div>
+</section>
+<!-- Bottom spacing for nav -->
+<div class="h-10 md:hidden"></div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant dark:border-on-tertiary-container shadow-sm dark:shadow-none md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-transform duration-150 rounded-xl" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md mt-1">홈</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-transform duration-150 rounded-xl" href="#">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-label-md text-label-md mt-1">의료수첩</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-on-primary-fixed-variant rounded-xl px-4 py-1 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">family_restroom</span>
+<span class="font-label-md text-label-md mt-1 font-bold">가족</span>
+</a>
+</nav>
+
+
+
+
+</body></html>

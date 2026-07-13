@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>질문 카드 전송 완료 - 메디버디</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"outline-variant": "#bbcbb4", "tertiary-fixed-dim": "#c6c6c7", "on-surface-variant": "#3d4a39", "surface-container-highest": "#e2e2e2", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "on-secondary-container": "#007314", "surface-white": "#FFFFFF", error: "#ba1a1a", "surface-dim": "#dadada", "on-primary-container": "#00732f", "on-tertiary-container": "#626363", "surface-bright": "#f9f9f9", "on-primary-fixed": "#002109", "surface-container-high": "#e8e8e8", "primary-container": "#6ffc8d", "on-tertiary": "#ffffff", "surface-container-low": "#f3f3f4", "secondary-fixed": "#73ff6e", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "inverse-surface": "#2f3131", success: "#267A52", "primary-fixed": "#71fe8f", primary: "#006e2d", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "inverse-primary": "#52e176", "on-surface": "#1a1c1c", "surface-variant": "#e2e2e2", "on-error": "#ffffff", danger: "#B42318", warning: "#A85D00", "secondary-fixed-dim": "#40e348", background: "#f9f9f9", outline: "#6c7b68", "on-secondary-fixed-variant": "#00530c", "on-primary-fixed-variant": "#005320", "on-tertiary-fixed": "#1a1c1c", surface: "#f9f9f9", "surface-tint": "#006e2d", "tertiary-fixed": "#e2e2e2", "on-secondary": "#ffffff", "surface-container": "#eeeeee", tertiary: "#5d5f5f", "border-muted": "#CBD8D5", "primary-fixed-dim": "#52e176", "on-secondary-fixed": "#002202", "on-background": "#1a1c1c", secondary: "#006e13", "on-error-container": "#93000a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-page": "20px", gutter: "16px", "button-height-lg": "56px", unit: "8px", "touch-target-min": "48px"}, fontFamily: {"display-lg-mobile": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], "label-md": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}]}}}};</script>
+<style>
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .animate-scale-in {
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes scaleIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Ambient subtle background glow */
+        .bg-ambient {
+            background: radial-gradient(circle at 50% -20%, var(--tw-colors-tertiary-fixed) 0%, transparent 70%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center justify-center bg-ambient relative overflow-hidden">
+<!-- Central Content Container -->
+<main class="w-full max-w-[720px] px-margin-page py-10 flex flex-col items-center relative z-10"><div class="w-full flex items-center gap-2 mb-8">
+  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-8 h-8 object-contain">
+  <span class="font-headline-md text-[20px] text-primary" style="color: rgb(93, 255, 99);">MediBuddy</span>
+</div>
+<!-- Graphic/Icon Section -->
+<div class="mb-gutter flex justify-center animate-scale-in">
+<div class="h-[100px] w-[100px] rounded-full bg-surface-white border-4 border-tertiary-fixed shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center">
+<span class="material-symbols-outlined text-[56px] text-success" style="font-variation-settings: 'FILL' 1;">
+                    check_circle
+                </span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center space-y-unit mb-8 animate-fade-in-up delay-100">
+<h1 class="font-headline-md text-headline-md text-on-surface">
+                어머니(김영희)에게<br>질문 카드를 보냈습니다
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant pt-2">
+                어머니가 메디버디를 열면<br>이 카드를 가장 먼저 보게 됩니다.
+            </p>
+</div>
+<!-- Card Preview (Bento-style Glassmorphism inspired, but grounded in brand rules) -->
+<div class="w-full bg-surface-white border border-border-muted rounded-xl p-[20px] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.08)] animate-fade-in-up delay-200 mb-10 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_16px_40px_-12px_rgba(23,107,104,0.15)]">
+<!-- Decorative soft accent line -->
+<div class="absolute top-0 left-0 w-full h-[4px] bg-primary-fixed-dim opacity-50"></div>
+<div class="flex items-center gap-3 mb-6">
+<div class="h-10 w-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">
+                        favorite
+                    </span>
+</div>
+<div>
+<span class="block font-label-md text-label-md text-tertiary">전송된 내용 미리보기</span>
+<span class="block font-body-lg text-[14px] leading-tight text-outline">오늘 오후 2:30 전송</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 items-start p-3 rounded-lg bg-surface-bright border border-surface-variant">
+<div class="h-8 w-8 rounded-full bg-tertiary-fixed text-primary-container flex items-center justify-center shrink-0 font-label-md text-label-md">1</div>
+<p class="font-body-lg text-body-lg text-on-surface mt-[2px]">오늘 하루, 몸과 마음의 컨디션은 어떠신가요?</p>
+</div>
+<div class="flex gap-4 items-start p-3 rounded-lg bg-surface-bright border border-surface-variant">
+<div class="h-8 w-8 rounded-full bg-tertiary-fixed text-primary-container flex items-center justify-center shrink-0 font-label-md text-label-md">2</div>
+<p class="font-body-lg text-body-lg text-on-surface mt-[2px]">점심 식사는 맛있게 드셨나요?</p>
+</div>
+<div class="flex gap-4 items-start p-3 rounded-lg bg-surface-bright border border-surface-variant">
+<div class="h-8 w-8 rounded-full bg-tertiary-fixed text-primary-container flex items-center justify-center shrink-0 font-label-md text-label-md">3</div>
+<p class="font-body-lg text-body-lg text-on-surface mt-[2px]">처방받으신 혈압약은 제시간에 챙겨 드셨나요?</p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-4 animate-fade-in-up delay-300">
+<button class="w-full h-button-height-lg rounded-xl bg-primary-container text-surface-white font-body-lg text-body-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform duration-200">
+                가족 목록으로 가기
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="w-full h-button-height-lg rounded-xl border border-primary-container text-primary-container bg-surface-white font-body-lg text-body-lg flex items-center justify-center gap-2 active:bg-tertiary-fixed transition-colors duration-200">
+                보낸 내역 보기
+                <span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+</div>
+</main>
+
+
+
+
+
+
+</body></html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediBuddy - Memory Quiz</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "outline-variant": "#bbcbb4", "on-tertiary-fixed": "#1a1c1c", "secondary-fixed-dim": "#40e348", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary": "#ffffff", tertiary: "#5d5f5f", success: "#267A52", "on-secondary-container": "#007314", "on-primary-fixed-variant": "#005320", "on-secondary-fixed-variant": "#00530c", "surface-white": "#FFFFFF", "error-container": "#ffdad6", warning: "#A85D00", "surface-container-highest": "#e2e2e2", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002202", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "on-primary-fixed": "#002109", surface: "#f9f9f9", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#2f3131", "on-tertiary-container": "#626363", outline: "#6c7b68", background: "#f9f9f9", "on-primary-container": "#00732f", "surface-container-low": "#f3f3f4", "inverse-primary": "#52e176", "primary-fixed": "#71fe8f", "surface-tint": "#006e2d", "on-surface-variant": "#3d4a39", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-error-container": "#93000a", "primary-fixed-dim": "#52e176", "secondary-fixed": "#73ff6e", primary: "#006e2d", "tertiary-fixed": "#e2e2e2", "surface-dim": "#dadada", "on-surface": "#1a1c1c", danger: "#B42318", "on-background": "#1a1c1c", "border-muted": "#CBD8D5", "surface-container-high": "#e8e8e8", "surface-variant": "#e2e2e2", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "surface-container": "#eeeeee", secondary: "#006e13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"touch-target-min": "48px", unit: "8px", gutter: "16px", "margin-page": "20px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["Noto Sans KR", "sans-serif"], "body-lg": ["Noto Sans KR", "sans-serif"], "body-xl": ["Noto Sans KR", "sans-serif"], "display-lg-mobile": ["Noto Sans KR", "sans-serif"], "question-lg": ["Noto Sans KR", "sans-serif"], "display-lg": ["Noto Sans KR", "sans-serif"], "headline-md": ["Noto Sans KR", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {"label-md": ["16px", {lineHeight: "24px", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "30px", fontWeight: "400"}], "body-xl": ["20px", {lineHeight: "32px", fontWeight: "500"}], "display-lg-mobile": ["28px", {lineHeight: "38px", fontWeight: "700"}], "question-lg": ["22px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "44px", fontWeight: "700"}], "headline-md": ["26px", {lineHeight: "36px", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min bg-surface border-b border-outline-variant flat no shadows transition-colors duration-200">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="h-8 w-8 object-contain"></div>
+<h1 class="font-headline-md text-headline-md font-bold" style="color: rgb(93, 255, 99);">MediBuddy</h1>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-surface-container-low transition-colors text-primary h-touch-target-min w-touch-target-min">
+<span class="material-symbols-outlined text-2xl" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow w-full max-w-[720px] px-margin-page pt-24 pb-32 flex flex-col justify-center">
+<!-- Progress Indicator (Optional/Contextual) -->
+<div class="w-full flex justify-center mb-8">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-primary-container"></div>
+<div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+<div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+<!-- Question Container -->
+<div class="text-center mb-12">
+<h2 class="font-question-lg text-question-lg text-on-surface">선생님께서 식후 30분에 약을 먹으라고 하셨나요?</h2>
+</div>
+<!-- Options Container -->
+<div class="flex flex-col gap-gutter w-full">
+<button class="w-full min-h-[80px] bg-surface-white border border-border-muted rounded-[16px] p-[20px] flex items-center justify-start gap-4 hover:bg-surface-container-low transition-colors duration-200 active:bg-[#EAF6F4] group">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center group-active:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-active:text-on-primary-container" data-icon="check_circle">check_circle</span>
+</div>
+<span class="font-body-xl text-body-xl text-on-surface text-left flex-grow">네, 그렇게 들었어요</span>
+</button>
+<button class="w-full min-h-[80px] bg-surface-white border border-border-muted rounded-[16px] p-[20px] flex items-center justify-start gap-4 hover:bg-surface-container-low transition-colors duration-200 active:bg-[#EAF6F4] group">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center group-active:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-active:text-on-primary-container" data-icon="cancel">cancel</span>
+</div>
+<span class="font-body-xl text-body-xl text-on-surface text-left flex-grow">아니오, 다르게 들었어요</span>
+</button>
+<button class="w-full min-h-[80px] bg-surface-white border border-border-muted rounded-[16px] p-[20px] flex items-center justify-start gap-4 hover:bg-surface-container-low transition-colors duration-200 active:bg-[#EAF6F4] group">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center group-active:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-active:text-on-primary-container" data-icon="help">help</span>
+</div>
+<span class="font-body-xl text-body-xl text-on-surface text-left flex-grow">잘 기억나지 않아요</span>
+</button>
+</div>
+</main>
+<!-- Script for handling button clicks (visual feedback only) -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', function() {
+                if(this.closest('.flex-col.gap-gutter')) {
+                    // It's a quiz option button
+                    // Add active state styling dynamically if needed, though CSS handles the base active state
+                    this.style.transform = 'scale(0.98)';
+                }
+            });
+            button.addEventListener('mouseup', function() {
+                 if(this.closest('.flex-col.gap-gutter')) {
+                    this.style.transform = 'scale(1)';
+                 }
+            });
+             button.addEventListener('mouseleave', function() {
+                 if(this.closest('.flex-col.gap-gutter')) {
+                    this.style.transform = 'scale(1)';
+                 }
+            });
+        });
+    </script>
+
+
+
+
+
+
+</body></html>

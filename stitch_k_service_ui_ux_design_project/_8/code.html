@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>메디버디 진료 결과</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "outline-variant": "#bbcbb4", "on-tertiary-fixed": "#1a1c1c", "secondary-fixed-dim": "#40e348", "tertiary-fixed-dim": "#c6c6c7", "primary-container": "#6ffc8d", "on-secondary": "#ffffff", tertiary: "#5d5f5f", success: "#267A52", "on-secondary-container": "#007314", "on-primary-fixed-variant": "#005320", "on-secondary-fixed-variant": "#00530c", "surface-white": "#FFFFFF", "error-container": "#ffdad6", warning: "#A85D00", "surface-container-highest": "#e2e2e2", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002202", "inverse-on-surface": "#f0f1f1", "on-tertiary-fixed-variant": "#454747", "on-primary-fixed": "#002109", surface: "#f9f9f9", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#2f3131", "on-tertiary-container": "#626363", outline: "#6c7b68", background: "#f9f9f9", "on-primary-container": "#00732f", "surface-container-low": "#f3f3f4", "inverse-primary": "#52e176", "primary-fixed": "#71fe8f", "surface-tint": "#006e2d", "on-surface-variant": "#3d4a39", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-error-container": "#93000a", "primary-fixed-dim": "#52e176", "secondary-fixed": "#73ff6e", primary: "#006e2d", "tertiary-fixed": "#e2e2e2", "surface-dim": "#dadada", "on-surface": "#1a1c1c", danger: "#B42318", "on-background": "#1a1c1c", "border-muted": "#CBD8D5", "surface-container-high": "#e8e8e8", "surface-variant": "#e2e2e2", "secondary-container": "#5ffe5f", "tertiary-container": "#e0e0e0", "surface-container": "#eeeeee", secondary: "#006e13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"touch-target-min": "48px", unit: "8px", gutter: "16px", "margin-page": "20px", "button-height-lg": "56px"}, fontFamily: {"label-md": ["'Noto Sans KR'", "sans-serif"], "body-lg": ["'Noto Sans KR'", "sans-serif"], "body-xl": ["'Noto Sans KR'", "sans-serif"], "display-lg-mobile": ["'Noto Sans KR'", "sans-serif"], "question-lg": ["'Noto Sans KR'", "sans-serif"], "display-lg": ["'Noto Sans KR'", "sans-serif"], "headline-md": ["'Noto Sans KR'", "sans-serif"], headline: ["Noto Sans"], display: ["Noto Sans"], body: ["Noto Sans"], label: ["Noto Sans"]}, fontSize: {}}}};</script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-touch-target-min bg-surface border-b border-outline-variant"><div class="flex items-center gap-2">
+  <button aria-label="Go back" class="flex items-center justify-center text-primary">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </button>
+  <div class="flex items-center gap-2">
+    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSa4fPBdyZddFoVhbQYOvYtnF2PziR6nCEjMf9qvlU0Tj25lhaHjposC9LaLQARfY81d4bFHUkgprRuql_rqGXzIRhviFvzpt8cqodR2xIwni_QKrtIHEbYpuOMRkCxalSELJJeMVDE_OSZbKgSVipCKe-3waVzwoS1e_dKkwAR47ZM_nHkqZXFVFsqtkDk8Bpteyjo33W0crXLx1lXxe3Ra32YjA6jZywZ1y6EzTcurfhEdlqL_x9" alt="MediBuddy Logo" class="w-8 h-8 object-contain">
+    <span class="font-headline-md text-headline-md font-bold text-primary-container">MediBuddy</span>
+  </div>
+</div>
+<button aria-label="More options" class="flex items-center justify-center text-primary">
+  <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button></header>
+<main class="w-full max-w-[720px] px-margin-page pt-20 pb-32 flex flex-col gap-8 flex-grow">
+<!-- Header Section -->
+<section class="mt-4">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-2">오늘 진료 내용을 정리했어요.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">어떤 내용을 들었는지 다시 한번 확인해보세요.</p>
+</section>
+<!-- Result Section (Bento Grid Style) -->
+<section class="grid grid-cols-1 gap-4">
+<!-- 1. 잘 기억한 내용 -->
+<div class="bg-surface-white rounded-xl border border-border-muted p-5 flex flex-col gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-success" style="font-size: 20px;">check_circle</span>
+</div>
+<h2 class="font-question-lg text-question-lg text-on-surface">잘 기억한 내용</h2>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 mt-1">
+<p class="font-body-xl text-body-xl text-on-surface">"식후 30분 복약"</p>
+</div>
+</div>
+<!-- 2. 다시 확인한 내용 -->
+<div class="bg-surface-white rounded-xl border border-border-muted p-5 flex flex-col gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-warning" style="font-size: 20px;">info</span>
+</div>
+<h2 class="font-question-lg text-question-lg text-on-surface">다시 확인한 내용</h2>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 mt-1">
+<p class="font-body-xl text-body-xl text-on-surface">"운동은 주 3회 30분 이상"</p>
+</div>
+</div>
+<!-- 3. 답을 못 들은 질문 -->
+<div class="bg-surface-white rounded-xl border border-border-muted p-5 flex flex-col gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline" style="font-size: 20px;">help</span>
+</div>
+<h2 class="font-question-lg text-question-lg text-on-surface">답을 못 들은 질문</h2>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 mt-1">
+<p class="font-body-xl text-body-xl text-on-surface">"피검사 필요 여부"</p>
+</div>
+</div>
+</section>
+<!-- Privacy Receipt -->
+<section class="mt-4 flex items-center justify-center bg-surface-container rounded-lg p-4">
+<span class="material-symbols-outlined text-outline mr-2" style="font-size: 20px;">lock</span>
+<p class="font-label-md text-label-md text-on-surface-variant">원본 녹음이 삭제되었습니다.</p>
+</section>
+</main>
+<!-- Bottom Sticky CTA -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-white border-t border-border-muted p-margin-page pb-8 z-40 flex justify-center shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+<div class="w-full max-w-[720px]">
+<button class="w-full h-button-height-lg bg-primary-container text-on-secondary rounded-lg font-body-xl text-body-xl flex items-center justify-center transition-colors hover:bg-surface-tint">
+                의료수첩에 저장
+            </button>
+</div>
+</div>
+
+
+
+
+</body></html>
