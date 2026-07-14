@@ -35,6 +35,45 @@ database.exec(`
     state_json TEXT NOT NULL,
     updated_at TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS invitations (
+    id TEXT PRIMARY KEY,
+    owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    relationship TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS invitations_owner_idx ON invitations(owner_user_id);
+  CREATE TABLE IF NOT EXISTS family_connections (
+    id TEXT PRIMARY KEY,
+    inviter_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    invitee_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    relationship TEXT NOT NULL,
+    connected_at TEXT NOT NULL,
+    UNIQUE(inviter_user_id, invitee_user_id)
+  );
+  CREATE TABLE IF NOT EXISTS appointments (
+    id TEXT NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, id)
+  );
+  CREATE TABLE IF NOT EXISTS visit_records (
+    id TEXT NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, id)
+  );
+  CREATE TABLE IF NOT EXISTS ai_usage (
+    subject TEXT NOT NULL,
+    day TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (subject, day)
+  );
 `)
 
 const findUserByEmailStatement = database.prepare('SELECT id, email, password_hash, password_salt, created_at FROM users WHERE email = ?')
@@ -54,6 +93,41 @@ const saveStateStatement = database.prepare(`
   VALUES (?, ?, ?)
   ON CONFLICT(user_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at
 `)
+const deleteUserStatement = database.prepare('DELETE FROM users WHERE id = ?')
+const insertInvitationStatement = database.prepare('INSERT INTO invitations (id, owner_user_id, code, name, relationship, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+const listInvitationsStatement = database.prepare('SELECT id, code, name, relationship, status, created_at FROM invitations WHERE owner_user_id = ? ORDER BY created_at DESC')
+const cancelInvitationStatement = database.prepare("UPDATE invitations SET status = 'cancelled' WHERE id = ? AND owner_user_id = ? AND status = 'pending'")
+const findInvitationByCodeStatement = database.prepare('SELECT id, owner_user_id, code, name, relationship, status, created_at FROM invitations WHERE code = ?')
+const acceptInvitationStatement = database.prepare("UPDATE invitations SET status = 'accepted' WHERE id = ? AND status = 'pending'")
+const insertConnectionStatement = database.prepare(`
+  INSERT INTO family_connections (id, inviter_user_id, invitee_user_id, name, relationship, connected_at)
+  VALUES (?, ?, ?, ?, ?, ?)
+  ON CONFLICT(inviter_user_id, invitee_user_id) DO NOTHING
+`)
+const listConnectionsAsInviterStatement = database.prepare('SELECT id, name, relationship, connected_at FROM family_connections WHERE inviter_user_id = ?')
+const listConnectionsAsInviteeStatement = database.prepare(`
+  SELECT family_connections.id, users.email, family_connections.relationship, family_connections.connected_at
+  FROM family_connections
+  JOIN users ON users.id = family_connections.inviter_user_id
+  WHERE family_connections.invitee_user_id = ?
+`)
+const listAppointmentsStatement = database.prepare('SELECT data_json FROM appointments WHERE user_id = ? ORDER BY id')
+const upsertAppointmentStatement = database.prepare(`
+  INSERT INTO appointments (id, user_id, data_json, updated_at) VALUES (?, ?, ?, ?)
+  ON CONFLICT(user_id, id) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at
+`)
+const deleteAppointmentsStatement = database.prepare('DELETE FROM appointments WHERE user_id = ?')
+const listVisitRecordsStatement = database.prepare('SELECT data_json FROM visit_records WHERE user_id = ? ORDER BY id')
+const upsertVisitRecordStatement = database.prepare(`
+  INSERT INTO visit_records (id, user_id, data_json, updated_at) VALUES (?, ?, ?, ?)
+  ON CONFLICT(user_id, id) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at
+`)
+const deleteVisitRecordsStatement = database.prepare('DELETE FROM visit_records WHERE user_id = ?')
+const consumeAiUsageStatement = database.prepare(`
+  INSERT INTO ai_usage (subject, day, count) VALUES (?, ?, 1)
+  ON CONFLICT(subject, day) DO UPDATE SET count = count + 1
+`)
+const readAiUsageStatement = database.prepare('SELECT count FROM ai_usage WHERE subject = ? AND day = ?')
 
 export async function createAccount(email, password) {
   const normalizedEmail = normalizeEmail(email)
@@ -111,10 +185,143 @@ export function loadUserState(userId) {
   }
 }
 
-export function saveUserState(userId, state) {
+export function saveUserState(userId, state, baseUpdatedAt) {
+  const existing = loadStateStatement.get(userId)
+  // 다른 기기에서 먼저 저장한 기록을 마지막 저장이 조용히 덮어쓰지 않도록 버전을 비교한다.
+  if (existing && baseUpdatedAt !== undefined && existing.updated_at !== baseUpdatedAt) {
+    throw new StateConflictError(existing.state_json, existing.updated_at)
+  }
   const updatedAt = new Date().toISOString()
   saveStateStatement.run(userId, JSON.stringify(state), updatedAt)
   return updatedAt
+}
+
+export function deleteAccount(userId) {
+  deleteUserStatement.run(userId)
+}
+
+export function createInvitation(ownerUserId, name, relationship) {
+  const invitation = {
+    id: randomUUID(),
+    code: createInviteCode(),
+    name,
+    relationship,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+  }
+  insertInvitationStatement.run(invitation.id, ownerUserId, invitation.code, invitation.name, invitation.relationship, invitation.status, invitation.createdAt)
+  return invitation
+}
+
+export function listInvitations(ownerUserId) {
+  return listInvitationsStatement.all(ownerUserId).map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    relationship: row.relationship,
+    status: row.status,
+    createdAt: row.created_at,
+  }))
+}
+
+export function cancelInvitation(ownerUserId, invitationId) {
+  cancelInvitationStatement.run(invitationId, ownerUserId)
+}
+
+export function findInvitationByCode(code) {
+  const row = findInvitationByCodeStatement.get(code)
+  if (!row) return null
+  return {
+    id: row.id,
+    ownerUserId: row.owner_user_id,
+    code: row.code,
+    name: row.name,
+    relationship: row.relationship,
+    status: row.status,
+    createdAt: row.created_at,
+  }
+}
+
+export function acceptInvitation(code, acceptingUserId) {
+  const invitation = findInvitationByCode(code)
+  if (!invitation || invitation.status !== 'pending') {
+    throw new AccountError('유효하지 않거나 이미 처리된 초대입니다.', 'INVITE_INVALID')
+  }
+  if (invitation.ownerUserId === acceptingUserId) {
+    throw new AccountError('자신이 만든 초대는 수락할 수 없습니다.', 'INVITE_SELF')
+  }
+  acceptInvitationStatement.run(invitation.id)
+  insertConnectionStatement.run(randomUUID(), invitation.ownerUserId, acceptingUserId, invitation.name, invitation.relationship, new Date().toISOString())
+  return invitation
+}
+
+export function listFamilyMembers(userId) {
+  const invited = listConnectionsAsInviterStatement.all(userId).map((row) => ({
+    id: row.id,
+    name: row.name,
+    relationship: row.relationship,
+    conditions: [],
+    connectedAt: row.connected_at,
+  }))
+  const inviters = listConnectionsAsInviteeStatement.all(userId).map((row) => ({
+    id: `inviter-${row.id}`,
+    name: row.email.split('@')[0],
+    relationship: '나를 초대한 가족',
+    conditions: [],
+    connectedAt: row.connected_at,
+  }))
+  return [...invited, ...inviters]
+}
+
+export function listUserAppointments(userId) {
+  return readRows(listAppointmentsStatement, userId)
+}
+
+export function replaceUserAppointments(userId, items) {
+  replaceRows(deleteAppointmentsStatement, upsertAppointmentStatement, userId, items)
+}
+
+export function listUserVisitRecords(userId) {
+  return readRows(listVisitRecordsStatement, userId)
+}
+
+export function replaceUserVisitRecords(userId, items) {
+  replaceRows(deleteVisitRecordsStatement, upsertVisitRecordStatement, userId, items)
+}
+
+function readRows(statement, userId) {
+  const rows = []
+  for (const row of statement.all(userId)) {
+    try {
+      rows.push(JSON.parse(row.data_json))
+    } catch {
+      // 손상된 행은 건너뛴다.
+    }
+  }
+  return rows
+}
+
+function replaceRows(deleteStatement, upsertStatement, userId, items) {
+  const updatedAt = new Date().toISOString()
+  database.exec('BEGIN')
+  try {
+    deleteStatement.run(userId)
+    for (const item of items) {
+      upsertStatement.run(String(item.id), userId, JSON.stringify(item), updatedAt)
+    }
+    database.exec('COMMIT')
+  } catch (error) {
+    database.exec('ROLLBACK')
+    throw error
+  }
+}
+
+export function consumeAiQuota(subject, dailyLimit) {
+  const day = new Date().toISOString().slice(0, 10)
+  const current = readAiUsageStatement.get(subject, day)?.count ?? 0
+  if (current >= dailyLimit) return false
+  consumeAiUsageStatement.run(subject, day)
+  return true
 }
 
 export function sessionCookie(token) {
@@ -131,6 +338,21 @@ export class AccountError extends Error {
     this.name = 'AccountError'
     this.code = code
   }
+}
+
+export class StateConflictError extends Error {
+  constructor(latestStateJson, latestUpdatedAt) {
+    super('다른 기기에서 먼저 저장한 기록이 있습니다.')
+    this.name = 'StateConflictError'
+    this.latestStateJson = latestStateJson
+    this.latestUpdatedAt = latestUpdatedAt
+  }
+}
+
+function createInviteCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const values = randomBytes(6)
+  return Array.from(values, (value) => alphabet[value % alphabet.length]).join('')
 }
 
 function normalizeEmail(email) {

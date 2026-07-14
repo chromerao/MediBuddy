@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Cloud, LoaderCircle, LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { Cloud, LoaderCircle, LogIn, LogOut, ShieldCheck, Trash2, UserRound } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import type { AuthStatus, AuthUser, SyncStatus } from '../types'
 
@@ -10,6 +10,7 @@ interface AccountProps {
   onLogin: (email: string, password: string) => Promise<void>
   onSignUp: (email: string, password: string) => Promise<void>
   onLogout: () => Promise<void>
+  onDeleteAccount: () => Promise<void>
   onBack: () => void
 }
 
@@ -20,7 +21,7 @@ const syncLabels: Record<SyncStatus, string> = {
   error: '저장 연결을 확인해 주세요',
 }
 
-export function Account({ user, authStatus, syncStatus, onLogin, onSignUp, onLogout, onBack }: AccountProps) {
+export function Account({ user, authStatus, syncStatus, onLogin, onSignUp, onLogout, onDeleteAccount, onBack }: AccountProps) {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -49,6 +50,20 @@ export function Account({ user, authStatus, syncStatus, onLogin, onSignUp, onLog
       await onLogout()
     } catch (logoutError) {
       setError(logoutError instanceof Error ? logoutError.message : '로그아웃하지 못했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!window.confirm('계정과 서버에 저장된 모든 진료 기록·가족 연결이 삭제됩니다. 계속할까요?')) return
+    if (!window.confirm('삭제한 기록은 되돌릴 수 없어요. 정말 삭제할까요?')) return
+    setSubmitting(true)
+    setError('')
+    try {
+      await onDeleteAccount()
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : '계정을 삭제하지 못했습니다.')
     } finally {
       setSubmitting(false)
     }
@@ -83,6 +98,9 @@ export function Account({ user, authStatus, syncStatus, onLogin, onSignUp, onLog
           {error && <p className="inline-error" role="alert">{error}</p>}
           <button className="button button--secondary button--large" type="button" disabled={submitting} onClick={handleLogout}>
             <LogOut aria-hidden="true" /> 로그아웃
+          </button>
+          <button className="button button--quiet" type="button" disabled={submitting} onClick={handleDeleteAccount}>
+            <Trash2 aria-hidden="true" /> 계정과 모든 기록 삭제하기
           </button>
         </section>
       )}

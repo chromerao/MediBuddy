@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, CircleAlert, FileText, HelpCircle, ListChecks, Printer, Stethoscope } from 'lucide-react'
+import { CalendarDays, CheckCircle2, CircleAlert, FileText, HelpCircle, ListChecks, Printer, Stethoscope, Trash2 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { PatientSummaryCard } from '../components/PatientSummaryCard'
 import { SourceBadge } from '../components/SourceBadge'
@@ -7,10 +7,12 @@ import type { VisitRecord } from '../types'
 interface VisitRecordDetailProps {
   record: VisitRecord
   onPrepareAgain: () => void
+  onDeleteTranscript: () => void
+  onDeleteRecord: () => void
   onBack: () => void
 }
 
-export function VisitRecordDetail({ record, onPrepareAgain, onBack }: VisitRecordDetailProps) {
+export function VisitRecordDetail({ record, onPrepareAgain, onDeleteTranscript, onDeleteRecord, onBack }: VisitRecordDetailProps) {
   return (
     <div className="flow-page visit-detail-page">
       <PageHeader title="진료 기록 상세" onBack={onBack} />
@@ -19,15 +21,16 @@ export function VisitRecordDetail({ record, onPrepareAgain, onBack }: VisitRecor
         <div><p className="eyebrow">기억 확인 완료</p><h1>{record.hospital} {record.department}</h1><p className="icon-text"><CalendarDays /> {record.date}</p><span>{record.disease}</span></div>
       </section>
 
-      <PatientSummaryCard summary={record.summary} />
+      <PatientSummaryCard summary={record.summary} patientName={record.patientName ?? '사용자'} />
 
-      {record.reviewSource && <div className="record-source"><SourceBadge>{record.reviewSource === 'ai' ? `전사 기반 AI 기억 확인${record.reviewModel ? ` · ${record.reviewModel}` : ''}` : '기본 기억 확인 질문'}</SourceBadge></div>}
+      {record.reviewSource === 'ai' && <div className="record-source"><SourceBadge>{`전사 기반 AI 기억 확인${record.reviewModel ? ` · ${record.reviewModel}` : ''}`}</SourceBadge></div>}
 
       {record.transcript && (
         <section className="record-transcript-card">
           <div><FileText /><h2>전사된 진료 내용</h2>{record.transcriptionModel && <small>{record.transcriptionModel}</small>}</div>
           <p>{record.transcript}</p>
           <small>음성 전사는 잘못 들릴 수 있습니다. 중요한 의료 정보는 의료진의 안내를 기준으로 확인하세요.</small>
+          <button className="button button--quiet" type="button" onClick={onDeleteTranscript}><Trash2 aria-hidden="true" /> 전사문만 삭제하기</button>
         </section>
       )}
 
@@ -51,6 +54,7 @@ export function VisitRecordDetail({ record, onPrepareAgain, onBack }: VisitRecor
       <div className="detail-actions">
         <button className="button button--secondary button--large" type="button" onClick={() => window.print()}><Printer /> 기록 인쇄하기</button>
         <button className="button button--primary button--large" type="button" onClick={onPrepareAgain}>이 기록으로 다음 진료 준비하기</button>
+        <button className="button button--quiet" type="button" onClick={onDeleteRecord}><Trash2 aria-hidden="true" /> 이 진료 기록 삭제하기</button>
       </div>
     </div>
   )

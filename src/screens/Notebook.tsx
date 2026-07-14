@@ -1,5 +1,7 @@
-import { BookHeart, Check, ChevronRight, Mic, MicOff, Plus, Save } from 'lucide-react'
+import { Activity, BookHeart, Check, ChevronRight, Mic, MicOff, Plus, Save } from 'lucide-react'
 import { useState } from 'react'
+import { TrendChart } from '../components/TrendChart'
+import { formatMetric, getMetricPoints } from '../metrics'
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import type { HealthLog, Task, VisitRecord } from '../types'
 
@@ -15,6 +17,9 @@ interface NotebookProps {
 export function Notebook({ tasks, healthLogs, visitRecords, onToggleTask, onAddLog, onOpenVisit }: NotebookProps) {
   const [draft, setDraft] = useState('')
   const speech = useSpeechRecognition({ onResult: setDraft })
+  const glucosePoints = getMetricPoints(healthLogs, 'glucose')
+  const weightPoints = getMetricPoints(healthLogs, 'weight')
+  const latestBloodPressure = healthLogs.find((log) => log.metric?.type === 'bloodPressure')?.metric
   function saveLog() {
     if (!draft.trim()) return
     onAddLog(draft.trim())
@@ -37,7 +42,7 @@ export function Notebook({ tasks, healthLogs, visitRecords, onToggleTask, onAddL
       </section>
       <section className="section-stack">
         <div className="section-heading"><h2>오늘의 실천 항목</h2><span>{tasks.filter((task) => task.completed).length}/{tasks.length}</span></div>
-        <div className="task-list">{tasks.map((task) => <button key={task.id} className={task.completed ? 'task-card is-complete' : 'task-card'} type="button" onClick={() => onToggleTask(task.id)}><span className="task-card__icon"><Check /></span><span>{task.label}</span><span className="task-card__check">{task.completed && <Check />}</span></button>)}</div>
+        {tasks.length > 0 ? <div className="task-list">{tasks.map((task) => <button key={task.id} className={task.completed ? 'task-card is-complete' : 'task-card'} type="button" onClick={() => onToggleTask(task.id)}><span className="task-card__icon"><Check /></span><span>{task.label}</span><span className="task-card__check">{task.completed && <Check />}</span></button>)}</div> : <div className="task-empty"><Check aria-hidden="true" /><p><strong>아직 실천 항목이 없어요.</strong><small>진료에서 정한 실천 내용이 이곳에 추가됩니다.</small></p></div>}
       </section>
       <section className="section-stack">
         <div className="section-heading"><h2>진료 기록</h2></div>
@@ -51,9 +56,44 @@ export function Notebook({ tasks, healthLogs, visitRecords, onToggleTask, onAddL
           {visitRecords.length === 0 && <div className="empty-record"><BookHeart /><p><strong>아직 저장된 진료가 없어요.</strong><small>기억 확인을 마치면 이곳에 기록돼요.</small></p></div>}
         </div>
       </section>
+      {(glucosePoints.length >= 2 || weightPoints.length >= 2 || latestBloodPressure) && (
+        <section className="section-stack">
+          <div className="section-heading"><h2>수치 추이</h2></div>
+          {glucosePoints.length >= 2 && (
+            <div className="trend-card">
+              <div className="trend-card__title"><Activity aria-hidden="true" /><h3>혈당</h3><small>최근 {glucosePoints.length}회</small></div>
+              <TrendChart points={glucosePoints} unit="mg/dL" />
+            </div>
+          )}
+          {weightPoints.length >= 2 && (
+            <div className="trend-card">
+              <div className="trend-card__title"><Activity aria-hidden="true" /><h3>체중</h3><small>최근 {weightPoints.length}회</small></div>
+              <TrendChart points={weightPoints} unit="kg" />
+            </div>
+          )}
+          {latestBloodPressure && (
+            <div className="trend-card trend-card--inline">
+              <div className="trend-card__title"><Activity aria-hidden="true" /><h3>혈압</h3></div>
+              <strong className="trend-card__bp">{latestBloodPressure.value}/{latestBloodPressure.secondary}</strong>
+              <small>가장 최근 기록</small>
+            </div>
+          )}
+        </section>
+      )}
       <section className="section-stack">
         <div className="section-heading"><h2>최근 기록</h2></div>
-        <div className="log-list">{healthLogs.map((log) => <div key={log.id}><span><BookHeart /></span><p><strong>{log.text}</strong><small>{log.time}</small></p></div>)}{healthLogs.length === 0 && <div className="empty-state"><Plus /><p>아직 기록이 없어요.</p></div>}</div>
+        <div className="log-list">
+          {healthLogs.map((log) => (
+            <div key={log.id}>
+              <span><BookHeart /></span>
+              <p>
+                <strong>{log.text}</strong>
+                <small>{log.time}{log.metric && <span className="metric-badge">{formatMetric(log.metric)}</span>}</small>
+              </p>
+            </div>
+          ))}
+          {healthLogs.length === 0 && <div className="empty-state"><Plus /><p>아직 기록이 없어요.</p></div>}
+        </div>
       </section>
     </div>
   )

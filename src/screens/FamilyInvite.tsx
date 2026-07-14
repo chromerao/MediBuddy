@@ -5,7 +5,8 @@ import type { FamilyInvitation } from '../types'
 
 interface FamilyInviteProps {
   pendingInvitations: FamilyInvitation[]
-  onCreate: (name: string, relationship: string) => FamilyInvitation
+  isAccountConnected: boolean
+  onCreate: (name: string, relationship: string) => Promise<FamilyInvitation>
   onCancel: (id: string) => void
   onBack: () => void
 }
@@ -18,16 +19,26 @@ function getInviteUrl(code: string) {
   return url.toString()
 }
 
-export function FamilyInvite({ pendingInvitations, onCreate, onCancel, onBack }: FamilyInviteProps) {
+export function FamilyInvite({ pendingInvitations, isAccountConnected, onCreate, onCancel, onBack }: FamilyInviteProps) {
   const [name, setName] = useState('')
   const [relationship, setRelationship] = useState('자녀')
   const [created, setCreated] = useState<FamilyInvitation | null>(pendingInvitations[0] ?? null)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'manual'>('idle')
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
 
-  function createInvitation() {
-    if (!name.trim()) return
-    setCreated(onCreate(name.trim(), relationship))
-    setCopyStatus('idle')
+  async function createInvitation() {
+    if (!name.trim() || creating) return
+    setCreating(true)
+    setCreateError('')
+    try {
+      setCreated(await onCreate(name.trim(), relationship))
+      setCopyStatus('idle')
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : '초대를 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setCreating(false)
+    }
   }
 
   async function copyInvite() {
@@ -50,7 +61,9 @@ export function FamilyInvite({ pendingInvitations, onCreate, onCancel, onBack }:
         <section className="invite-form">
           <label><span>초대할 가족 이름</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="예: 김민수" autoComplete="name" /></label>
           <label><span>나와의 관계</span><select value={relationship} onChange={(event) => setRelationship(event.target.value)}><option>자녀</option><option>배우자</option><option>부모</option><option>형제·자매</option><option>기타 가족</option></select></label>
-          <button className="button button--primary button--large" type="button" disabled={!name.trim()} onClick={createInvitation}><Link2 /> 초대 링크 만들기</button>
+          {createError && <p className="inline-error" role="alert">{createError}</p>}
+          {!isAccountConnected && <p className="inline-notice">지금은 로그인하지 않아 초대 링크가 이 브라우저에서만 동작해요. 다른 기기의 가족을 초대하려면 먼저 로그인해 주세요.</p>}
+          <button className="button button--primary button--large" type="button" disabled={!name.trim() || creating} onClick={createInvitation}><Link2 /> {creating ? '초대 만드는 중…' : '초대 링크 만들기'}</button>
         </section>
       ) : (
         <section className="invite-card">

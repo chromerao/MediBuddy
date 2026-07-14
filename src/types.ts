@@ -12,11 +12,13 @@ export type AppStep =
   | 'results'
   | 'settings'
   | 'account'
+  | 'profile'
   | 'calendar'
   | 'visit-detail'
   | 'share-settings'
   | 'family-invite'
   | 'accept-invite'
+  | 'medications'
 
 export interface Task {
   id: string
@@ -25,10 +27,37 @@ export interface Task {
   icon: 'pill' | 'walk' | 'water'
 }
 
+export interface HealthMetric {
+  type: 'glucose' | 'bloodPressure' | 'weight'
+  value: number
+  secondary?: number
+  context?: string
+}
+
 export interface HealthLog {
   id: string
   text: string
   time: string
+  createdAt?: string
+  metric?: HealthMetric
+}
+
+export type MedicationSlot = 'morning' | 'noon' | 'evening' | 'night'
+
+export interface Medication {
+  id: string
+  name: string
+  slots: MedicationSlot[]
+  memo: string
+  createdAt: string
+}
+
+export interface MedicationIntake {
+  id: string
+  medicationId: string
+  date: string
+  slot: MedicationSlot
+  takenAt: string
 }
 
 export interface VisitSummary {
@@ -63,7 +92,7 @@ export interface VisitEvaluation {
   unanswered: string[]
 }
 
-export type ReviewSource = 'ai' | 'fallback'
+export type ReviewSource = 'ai' | 'none'
 
 export interface AuthUser {
   id: string
@@ -74,7 +103,15 @@ export interface AuthUser {
 export type AuthStatus = 'checking' | 'anonymous' | 'authenticated'
 export type SyncStatus = 'idle' | 'syncing' | 'saved' | 'error'
 
+export interface UserProfile {
+  userName: string
+  patientName: string
+  relationship: string
+}
+
 export type AppointmentType = 'outpatient' | 'surgery' | 'examination' | 'procedure'
+
+export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled'
 
 export interface MedicalAppointment {
   id: string
@@ -85,13 +122,15 @@ export interface MedicalAppointment {
   doctor: string
   type: AppointmentType
   memo: string
+  status: AppointmentStatus
   createdAt: string
 }
 
-export type AppointmentInput = Omit<MedicalAppointment, 'id' | 'createdAt'>
+export type AppointmentInput = Omit<MedicalAppointment, 'id' | 'status' | 'createdAt'>
 
 export interface VisitRecord {
   id: string
+  patientName?: string
   date: string
   day: string
   month: string
@@ -107,6 +146,7 @@ export interface VisitRecord {
   transcriptionModel?: string
   reviewModel?: string
   reviewSource?: ReviewSource
+  appointmentId?: string
   createdAt: string
 }
 
@@ -123,6 +163,7 @@ export interface UserSettings {
   fontSize: 'normal' | 'large' | 'xlarge'
   appointmentReminders: boolean
   preparationReminders: boolean
+  medicationReminders: boolean
 }
 
 export interface FamilyInvitation {
@@ -145,17 +186,22 @@ export interface FamilyMember {
 export interface AppState {
   hasOnboarded: boolean
   role: 'self' | 'family'
+  activeVisitRole: 'self' | 'family'
+  activeAppointmentId: string | null
+  profile: UserProfile
   step: AppStep
   tab: Tab
   symptomInput: string
   summary: VisitSummary
   tasks: Task[]
   healthLogs: HealthLog[]
+  medications: Medication[]
+  medicationIntakes: MedicationIntake[]
   consented: boolean
   answers: QuizAnswer[]
   visitTranscript: string
   transcriptionModel: string | null
-  visitReview: VisitReview
+  visitReview: VisitReview | null
   reviewModel: string | null
   reviewSource: ReviewSource
   appointments: MedicalAppointment[]

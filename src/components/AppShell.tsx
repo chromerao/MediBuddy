@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
-import { BookHeart, Home, MoreVertical, Users } from 'lucide-react'
-import type { Tab, UserSettings } from '../types'
+import { BookHeart, Home, LogIn, LogOut, MoreVertical, UserRound, Users } from 'lucide-react'
+import type { AuthStatus, Tab, UserSettings } from '../types'
 import { Brand } from './Brand'
 
 interface AppShellProps extends PropsWithChildren {
@@ -9,6 +9,10 @@ interface AppShellProps extends PropsWithChildren {
   compactContent?: boolean
   onGoHome: () => void
   onOpenSettings: () => void
+  onOpenProfile: () => void
+  onOpenAccount: () => void
+  onLogout: () => void
+  authStatus: AuthStatus
   fontSize: UserSettings['fontSize']
 }
 
@@ -18,14 +22,28 @@ const navigation = [
   { id: 'family' as const, label: '가족', icon: Users },
 ]
 
-export function AppShell({ tab, onTabChange, compactContent = false, onGoHome, onOpenSettings, fontSize, children }: AppShellProps) {
+export function AppShell({ tab, onTabChange, compactContent = false, onGoHome, onOpenSettings, onOpenProfile, onOpenAccount, onLogout, authStatus, fontSize, children }: AppShellProps) {
   return (
     <div className={`app-shell font-size--${fontSize}`}>
       <header className="topbar">
         <Brand onClick={onGoHome} />
-        <button className="icon-button" type="button" aria-label="설정 열기" onClick={onOpenSettings}>
-          <MoreVertical aria-hidden="true" />
-        </button>
+        <div className="topbar-actions">
+          <button className="topbar-action" type="button" onClick={onOpenProfile}>
+            <UserRound aria-hidden="true" /><span>내 정보</span>
+          </button>
+          {authStatus === 'authenticated' ? (
+            <button className="topbar-action" type="button" onClick={onLogout}>
+              <LogOut aria-hidden="true" /><span>로그아웃</span>
+            </button>
+          ) : (
+            <button className="topbar-action topbar-action--accent" type="button" onClick={onOpenAccount}>
+              <LogIn aria-hidden="true" /><span>로그인·가입</span>
+            </button>
+          )}
+          <button className="icon-button" type="button" aria-label="설정 열기" onClick={onOpenSettings}>
+            <MoreVertical aria-hidden="true" />
+          </button>
+        </div>
       </header>
       <main className={compactContent ? 'main main--flow' : 'main'}>{children}</main>
       <nav className="bottom-nav" aria-label="주요 메뉴">

@@ -6,15 +6,29 @@ import { z } from 'zod'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import {
   AccountError,
+  StateConflictError,
+  acceptInvitation,
+  cancelInvitation,
   clearSessionCookie,
+  consumeAiQuota,
   createAccount,
+  createInvitation,
   createSession,
   databasePath,
+  deleteAccount,
   deleteSession,
+  findInvitationByCode,
   getAuthenticatedUser,
+  listFamilyMembers,
+  listInvitations,
+  listUserAppointments,
+  listUserVisitRecords,
   loadUserState,
+  replaceUserAppointments,
+  replaceUserVisitRecords,
   saveUserState,
   sessionCookie,
   verifyAccount,
@@ -73,16 +87,29 @@ const credentialsSchema = z.object({
 
 const userStateSchema = z.object({
   state: z.record(z.string(), z.unknown()),
+  baseUpdatedAt: z.string().nullable().optional(),
+})
+
+const invitationRequestSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  relationship: z.string().trim().min(1).max(20),
+})
+
+const inviteCodeSchema = z.string().trim().regex(/^[A-Z2-9]{6}$/)
+
+const recordItemsSchema = z.object({
+  items: z.array(z.looseObject({ id: z.string().min(1).max(64) })).max(500),
 })
 
 const aiRateLimit = createRateLimit(20)
 const authRateLimit = createRateLimit(20)
+const aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 40)
 
 app.disable('x-powered-by')
-app.use(express.json({ limit: '512kb' }))
+app.use(express.json({ limit: '2mb' }))
 app.use('/api/auth', authRateLimit)
-app.use('/api/ai', aiRateLimit)
-app.use('/api/audio', aiRateLimit)
+app.use('/api/ai', aiRateLimit, aiDailyQuota)
+app.use('/api/audio', aiRateLimit, aiDailyQuota)
 
 app.post('/api/auth/signup', async (request, response) => {
   const parsed = credentialsSchema.safeParse(request.body)
@@ -151,8 +178,152 @@ app.put('/api/state', (request, response) => {
     response.status(400).json({ error: '저장할 데이터 형식을 확인해 주세요.' })
     return
   }
-  const updatedAt = saveUserState(user.id, parsed.data.state)
-  response.json({ updatedAt })
+  try {
+    const updatedAt = saveUserState(user.id, parsed.data.state, parsed.data.baseUpdatedAt)
+    response.json({ updatedAt })
+  } catch (error) {
+    if (error instanceof StateConflictError) {
+      let latestState = null
+      try {
+        latestState = JSON.parse(error.latestStateJson)
+      } catch {
+        // 손상된 서버 기록은 그대로 두고 충돌 사실만 알린다.
+      }
+      response.status(409).json({ error: error.message, state: latestState, updatedAt: error.latestUpdatedAt })
+      return
+    }
+    throw error
+  }
+})
+
+// 진료 기록·병원 일정은 전체 상태 JSON과 분리해 개별 행으로 저장한다.
+app.get('/api/appointments', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  response.json({ items: listUserAppointments(user.id) })
+})
+
+app.put('/api/appointments', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  const parsed = recordItemsSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: '저장할 일정 형식을 확인해 주세요.' })
+    return
+  }
+  replaceUserAppointments(user.id, parsed.data.items)
+  response.json({ ok: true })
+})
+
+app.get('/api/visit-records', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  response.json({ items: listUserVisitRecords(user.id) })
+})
+
+app.put('/api/visit-records', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  const parsed = recordItemsSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: '저장할 진료 기록 형식을 확인해 주세요.' })
+    return
+  }
+  replaceUserVisitRecords(user.id, parsed.data.items)
+  response.json({ ok: true })
+})
+
+app.delete('/api/account', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  deleteSession(request)
+  deleteAccount(user.id)
+  response.setHeader('Set-Cookie', clearSessionCookie())
+  response.status(204).end()
+})
+
+app.get('/api/family', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  response.json({ invitations: listInvitations(user.id), members: listFamilyMembers(user.id) })
+})
+
+app.post('/api/family/invitations', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  const parsed = invitationRequestSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: '초대할 가족 이름과 관계를 확인해 주세요.' })
+    return
+  }
+  const invitation = createInvitation(user.id, parsed.data.name, parsed.data.relationship)
+  response.status(201).json({ invitation })
+})
+
+app.post('/api/family/invitations/:id/cancel', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  cancelInvitation(user.id, String(request.params.id))
+  response.status(204).end()
+})
+
+app.get('/api/family/invitations/code/:code', (request, response) => {
+  const parsed = inviteCodeSchema.safeParse(String(request.params.code).toUpperCase())
+  const invitation = parsed.success ? findInvitationByCode(parsed.data) : null
+  if (!invitation) {
+    response.status(404).json({ error: '초대를 찾을 수 없습니다.' })
+    return
+  }
+  // 초대받은 사람에게 필요한 정보만 노출한다(초대자 계정 정보 제외).
+  const { id, code, name, relationship, status, createdAt } = invitation
+  response.json({ invitation: { id, code, name, relationship, status, createdAt } })
+})
+
+app.post('/api/family/invitations/code/:code/accept', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '초대를 수락하려면 로그인이 필요합니다.' })
+    return
+  }
+  const parsed = inviteCodeSchema.safeParse(String(request.params.code).toUpperCase())
+  if (!parsed.success) {
+    response.status(400).json({ error: '초대 코드 형식이 올바르지 않습니다.' })
+    return
+  }
+  try {
+    acceptInvitation(parsed.data, user.id)
+  } catch (error) {
+    if (error instanceof AccountError) {
+      response.status(409).json({ error: error.message })
+      return
+    }
+    throw error
+  }
+  response.json({ invitations: listInvitations(user.id), members: listFamilyMembers(user.id) })
 })
 
 app.get('/api/health/llm', (_request, response) => {
@@ -215,6 +386,8 @@ app.post('/api/ai/prepare', async (request, response) => {
   try {
     const completion = await openai.responses.parse({
       model,
+      // 사용자가 화면 앞에서 기다리는 호출이므로 추론 강도를 최소로 낮춰 응답 시간을 줄인다.
+      reasoning: { effort: 'minimal' },
       input: [
         {
           role: 'system',
@@ -269,6 +442,7 @@ app.post('/api/ai/post-visit', async (request, response) => {
   try {
     const completion = await openai.responses.parse({
       model,
+      reasoning: { effort: 'low' },
       input: [
         {
           role: 'system',
@@ -349,6 +523,36 @@ app.listen(port, '0.0.0.0', () => {
   if (hasApiKey) console.log(`Transcription: configured (${transcriptionModel})`)
   console.log(`Database: ${databasePath}`)
 })
+
+// 분당 제한(메모리)과 별개로, SQLite에 남는 일일 사용량으로 재시작 후에도 비용 악용을 막는다.
+function aiDailyQuota(request, response, next) {
+  const user = getAuthenticatedUser(request)
+  let subject
+  if (user) {
+    subject = `user:${user.id}`
+  } else {
+    let anonId = readCookie(request, 'medibuddy_anon')
+    if (!anonId || !/^[0-9a-f-]{36}$/.test(anonId)) {
+      anonId = randomUUID()
+      response.setHeader('Set-Cookie', `medibuddy_anon=${anonId}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 365}`)
+    }
+    subject = `anon:${anonId}`
+  }
+  if (!consumeAiQuota(subject, aiDailyLimit)) {
+    response.status(429).json({ error: '오늘 사용할 수 있는 AI 요청 한도를 모두 사용했습니다. 내일 다시 시도해 주세요.' })
+    return
+  }
+  next()
+}
+
+function readCookie(request, name) {
+  const cookieHeader = String(request.headers.cookie ?? '')
+  for (const part of cookieHeader.split(';')) {
+    const [cookieName, ...valueParts] = part.trim().split('=')
+    if (cookieName === name) return valueParts.join('=')
+  }
+  return null
+}
 
 function createRateLimit(limit) {
   const buckets = new Map()

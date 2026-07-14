@@ -9,30 +9,38 @@ interface PrepareVisitProps {
   value: string
   summary: VisitSummary
   familyMode: boolean
+  patientName: string
   onValueChange: (value: string) => void
   onReview: () => void
   onCreateCard: () => void
   onStartVisit: () => void
+  onSaveCard: () => void
   onBack: () => void
   isGenerating: boolean
   aiNotice: string
   aiModel: string | null
+  recentMetricsNote: string | null
 }
 
-export function PrepareVisit({ step, value, summary, familyMode, onValueChange, onReview, onCreateCard, onStartVisit, onBack, isGenerating, aiNotice, aiModel }: PrepareVisitProps) {
+export function PrepareVisit({ step, value, summary, familyMode, patientName, onValueChange, onReview, onCreateCard, onStartVisit, onSaveCard, onBack, isGenerating, aiNotice, aiModel, recentMetricsNote }: PrepareVisitProps) {
   const { isListening, error, supported, toggle } = useSpeechRecognition({ onResult: onValueChange })
 
   if (step === 'summary') {
     return (
       <div className="flow-page">
         <FlowHeader title="질문 카드가 준비됐어요" onBack={onBack} />
-        {familyMode && <div className="family-context">김영희 님을 위해 대신 작성 중입니다.</div>}
-        <PatientSummaryCard summary={summary} familyAuthored={familyMode} generatedByAi={!aiNotice} />
+        {familyMode && <div className="family-context">{patientName} 님을 위해 대신 작성 중입니다.</div>}
+        <PatientSummaryCard summary={summary} patientName={patientName} familyAuthored={familyMode} generatedByAi={!aiNotice} />
         <div className="safety-note"><Check aria-hidden="true" /><p>입력하신 내용만 정리했어요. 진단이나 위험도 판단은 포함하지 않습니다.</p></div>
         <div className="sticky-actions">
           <button className="button button--primary button--large" type="button" onClick={onStartVisit}>
-            {familyMode ? '질문 카드 보내기' : '진료 시작하기'}
+            이 질문 카드로 진료 시작하기
           </button>
+          {familyMode && (
+            <button className="button button--secondary button--large" type="button" onClick={onSaveCard}>
+              질문 카드만 저장하기
+            </button>
+          )}
         </div>
       </div>
     )
@@ -67,7 +75,7 @@ export function PrepareVisit({ step, value, summary, familyMode, onValueChange, 
     <div className="flow-page symptom-page">
       <FlowHeader title="진료 준비" onBack={onBack} />
       <div className="progress-line"><span style={{ width: '33%' }} /></div>
-      {familyMode && <div className="family-context">김영희 님을 위해 대신 작성 중입니다.</div>}
+      {familyMode && <div className="family-context">{patientName} 님을 위해 대신 작성 중입니다.</div>}
       <section className="flow-intro flow-intro--center">
         <p className="eyebrow">편하게 말씀해 주세요</p>
         <h1>요즘 불편한 점이나<br />선생님께 말씀드리고 싶은<br />내용을 알려주세요.</h1>
@@ -84,6 +92,7 @@ export function PrepareVisit({ step, value, summary, familyMode, onValueChange, 
         <span><Keyboard size={20} /> 글로 입력하기</span>
         <textarea value={value} onChange={(event) => onValueChange(event.target.value)} placeholder="예: 요즘 새벽에 발이 저리고, 공복 혈당은 130이었어요." />
       </label>
+      {recentMetricsNote && <p className="inline-notice">의료수첩에 기록한 수치가 함께 전달돼요: {recentMetricsNote}</p>}
       <div className="sticky-actions"><button className="button button--primary button--large" type="button" onClick={onReview} disabled={!value.trim() || isGenerating}>{isGenerating ? <><LoaderCircle className="spin-icon" aria-hidden="true" /> AI가 질문을 정리하고 있어요</> : '입력 내용 확인하기'}</button></div>
     </div>
   )

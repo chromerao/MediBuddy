@@ -1,10 +1,11 @@
-import { ArrowLeft, Check, CheckCircle2, CircleAlert, Clock3, HelpCircle, ListChecks, LockKeyhole, Mic, ShieldCheck, Sparkles, Square, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Check, CheckCircle2, CircleAlert, Clock3, FileText, HelpCircle, ListChecks, LockKeyhole, Mic, ShieldCheck, Sparkles, Square, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { generatePostVisitReview, transcribeVisitAudio } from '../api'
+import { appointmentTypeLabels, formatAppointmentDate } from '../appointments'
 import { SourceBadge } from '../components/SourceBadge'
-import { evaluateVisitReview, fallbackVisitReview } from '../data'
+import { evaluateVisitReview } from '../data'
 import { useVisitRecorder } from '../hooks/useVisitRecorder'
-import type { AppStep, QuizAnswer, ReviewSource, VisitReview, VisitSummary } from '../types'
+import type { AppStep, MedicalAppointment, QuizAnswer, ReviewSource, VisitReview, VisitSummary } from '../types'
 
 interface VisitFlowProps {
   step: Extract<AppStep, 'consent' | 'recording' | 'processing' | 'quiz' | 'results'>
@@ -13,42 +14,42 @@ interface VisitFlowProps {
   answers: QuizAnswer[]
   transcript: string
   transcriptionModel: string | null
-  review: VisitReview
+  review: VisitReview | null
   reviewModel: string | null
   reviewSource: ReviewSource
+  upcomingAppointments: MedicalAppointment[]
+  selectedAppointmentId: string | null
+  onSelectAppointment: (appointmentId: string | null) => void
   onConsentChange: (value: boolean) => void
   onStepChange: (step: AppStep) => void
   onAnswer: (answer: QuizAnswer) => void
   onTranscriptionComplete: (transcript: string, model: string | null) => void
-  onReviewComplete: (review: VisitReview, model: string | null, source: ReviewSource) => void
+  onReviewComplete: (review: VisitReview | null, model: string | null, source: ReviewSource) => void
   onSaveResults: () => void
   onBack: () => void
 }
 
-type ProcessingState = 'idle' | 'transcribing' | 'generating' | 'ready' | 'error'
+type ProcessingState = 'idle' | 'transcribing' | 'generating' | 'ready' | 'error' | 'review-error'
 
-export function VisitFlow({ step, summary, consented, answers, transcript, transcriptionModel, review, reviewModel, reviewSource, onConsentChange, onStepChange, onAnswer, onTranscriptionComplete, onReviewComplete, onSaveResults, onBack }: VisitFlowProps) {
+export function VisitFlow({ step, summary, consented, answers, transcript, transcriptionModel, review, reviewModel, reviewSource, upcomingAppointments, selectedAppointmentId, onSelectAppointment, onConsentChange, onStepChange, onAnswer, onTranscriptionComplete, onReviewComplete, onSaveResults, onBack }: VisitFlowProps) {
   const recorder = useVisitRecorder()
   const [quizIndex, setQuizIndex] = useState(answers.length)
   const [processingState, setProcessingState] = useState<ProcessingState>('idle')
   const [processingError, setProcessingError] = useState('')
-  const [processingNotice, setProcessingNotice] = useState('')
   const audioRef = useRef<Blob | null>(null)
 
   async function startRecording() {
     audioRef.current = null
     setProcessingState('idle')
     setProcessingError('')
-    setProcessingNotice('')
     onTranscriptionComplete('', null)
-    onReviewComplete(fallbackVisitReview, null, 'fallback')
+    onReviewComplete(null, null, 'none')
     await recorder.start()
   }
 
   async function finishRecording() {
     setProcessingState('transcribing')
     setProcessingError('')
-    setProcessingNotice('')
     onStepChange('processing')
     const audio = await recorder.stop()
     if (!audio) {
@@ -77,16 +78,17 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
 
   async function runReviewGeneration(visitTranscript: string) {
     setProcessingState('generating')
-    setProcessingNotice('')
+    setProcessingError('')
     try {
       const result = await generatePostVisitReview(visitTranscript, summary.questions)
       onReviewComplete(result.review, result.model, 'ai')
-    } catch (error) {
-      onReviewComplete(fallbackVisitReview, null, 'fallback')
-      const message = error instanceof Error ? error.message : '기억 확인 질문을 만들지 못했습니다.'
-      setProcessingNotice(`${message} 안전한 기본 질문으로 계속할 수 있어요.`)
-    } finally {
       setProcessingState('ready')
+    } catch (error) {
+      // 실제 진료와 무관한 고정 질문을 보여주지 않기 위해, 실패 시에는
+      // 전사문 확인·질문 생성 재시도·전사문만 저장·다시 녹음만 제공한다.
+      onReviewComplete(null, null, 'none')
+      setProcessingState('review-error')
+      setProcessingError(error instanceof Error ? error.message : '기억 확인 질문을 만들지 못했습니다.')
     }
   }
 
@@ -95,22 +97,14 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
     recorder.destroyRecording()
     setProcessingState('idle')
     setProcessingError('')
-    setProcessingNotice('')
     onTranscriptionComplete('', null)
-    onReviewComplete(fallbackVisitReview, null, 'fallback')
+    onReviewComplete(null, null, 'none')
     onStepChange('recording')
   }
 
   function retryTranscription() {
     const audio = audioRef.current
     if (audio) void runTranscription(audio)
-  }
-
-  function continueWithFallback() {
-    audioRef.current = null
-    recorder.destroyRecording()
-    onReviewComplete(fallbackVisitReview, null, 'fallback')
-    onStepChange('quiz')
   }
 
   if (step === 'consent') {
@@ -127,6 +121,36 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
           <div><span><LockKeyhole /></span><p><strong>전사에 필요한 만큼만 전송</strong><small>원본 녹음은 글로 바꾸기 위해 서버와 OpenAI API로 전송해요.</small></p></div>
           <div><span><Trash2 /></span><p><strong>앱에 원본을 저장하지 않음</strong><small>전사가 끝나면 앱에는 녹음 파일 대신 전사된 글만 남겨요.</small></p></div>
         </div>
+        {upcomingAppointments.length > 0 && (
+          <section className="appointment-link-picker">
+            <p className="eyebrow"><CalendarDays aria-hidden="true" /> 이번 녹음을 연결할 일정</p>
+            <div role="radiogroup" aria-label="이번 진료 일정 선택">
+              {upcomingAppointments.map((appointment) => (
+                <button
+                  key={appointment.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedAppointmentId === appointment.id}
+                  className={selectedAppointmentId === appointment.id ? 'quiz-option is-selected' : 'quiz-option'}
+                  onClick={() => onSelectAppointment(appointment.id)}
+                >
+                  <span>{appointment.hospital} {appointment.department} · {formatAppointmentDate(appointment.date, appointment.time)} ({appointmentTypeLabels[appointment.type]})</span>
+                  {selectedAppointmentId === appointment.id && <Check aria-hidden="true" />}
+                </button>
+              ))}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={selectedAppointmentId === null}
+                className={selectedAppointmentId === null ? 'quiz-option is-selected' : 'quiz-option'}
+                onClick={() => onSelectAppointment(null)}
+              >
+                <span>등록된 일정과 연결하지 않을래요</span>
+                {selectedAppointmentId === null && <Check aria-hidden="true" />}
+              </button>
+            </div>
+          </section>
+        )}
         <label className="consent-check">
           <input type="checkbox" checked={consented} onChange={(event) => onConsentChange(event.target.checked)} />
           <span>위 내용을 이해했으며 진료 녹음에 동의합니다.</span>
@@ -165,31 +189,38 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
   if (step === 'processing') {
     const isTranscribing = processingState === 'idle' || processingState === 'transcribing'
     const isGenerating = processingState === 'generating'
+    const isReviewError = processingState === 'review-error'
     return (
       <div className="processing-page" aria-live="polite">
         <span className="processing-orbit"><Sparkles /></span>
-        <h1>{isTranscribing ? <>진료 음성을<br />글로 바꾸고 있어요.</> : isGenerating ? <>기억 확인 질문을<br />만들고 있어요.</> : processingState === 'ready' ? <>전사 내용을<br />확인해 주세요.</> : <>전사를<br />완료하지 못했어요.</>}</h1>
-        <p>{isTranscribing ? '녹음 길이에 따라 잠시 시간이 걸릴 수 있어요.' : isGenerating ? '전사에서 명확히 확인되는 내용만 질문으로 정리하고 있어요.' : processingState === 'ready' ? '잘못 들린 부분이 있을 수 있으니 중요한 내용은 의료진에게 다시 확인해 주세요.' : processingError}</p>
+        <h1>{isTranscribing ? <>진료 음성을<br />글로 바꾸고 있어요.</> : isGenerating ? <>기억 확인 질문을<br />만들고 있어요.</> : processingState === 'ready' ? <>전사 내용을<br />확인해 주세요.</> : isReviewError ? <>기억 확인 질문을<br />만들지 못했어요.</> : <>전사를<br />완료하지 못했어요.</>}</h1>
+        <p>{isTranscribing ? '녹음 길이에 따라 잠시 시간이 걸릴 수 있어요.' : isGenerating ? '전사에서 명확히 확인되는 내용만 질문으로 정리하고 있어요.' : processingState === 'ready' ? '잘못 들린 부분이 있을 수 있으니 중요한 내용은 의료진에게 다시 확인해 주세요.' : isReviewError ? `${processingError} 아래 전사문을 확인한 뒤 다시 시도하거나, 전사문만 저장할 수 있어요.` : processingError}</p>
         <div className="processing-steps">
-          <span className={isGenerating || processingState === 'ready' ? 'is-done' : isTranscribing ? 'is-current' : ''}>{isTranscribing ? <span className="spinner" /> : <Check />} 음성을 글로 바꾸기</span>
+          <span className={isGenerating || processingState === 'ready' || isReviewError ? 'is-done' : isTranscribing ? 'is-current' : ''}>{isTranscribing ? <span className="spinner" /> : <Check />} 음성을 글로 바꾸기</span>
           <span className={processingState === 'ready' ? 'is-done' : isGenerating ? 'is-current' : ''}>{isGenerating ? <span className="spinner" /> : processingState === 'ready' ? <Check /> : null} 기억 확인 질문 만들기</span>
-          <span className={processingState === 'ready' ? 'is-current' : ''}>전사 내용 확인하기</span>
+          <span className={processingState === 'ready' || isReviewError ? 'is-current' : ''}>전사 내용 확인하기</span>
         </div>
-        {processingState === 'ready' && <SourceBadge>{reviewSource === 'ai' ? `AI 질문 · ${reviewModel ?? '연결됨'}` : '안전한 기본 질문'}</SourceBadge>}
-        {processingState === 'ready' && processingNotice && <p className="inline-notice" role="status">{processingNotice}</p>}
-        {processingState === 'ready' && transcript && (
+        {processingState === 'ready' && <SourceBadge>{`AI 질문 · ${reviewModel ?? '연결됨'}`}</SourceBadge>}
+        {(processingState === 'ready' || isReviewError) && transcript && (
           <section className="processing-transcript">
             <div><h2>전사된 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
             <p>{transcript}</p>
           </section>
         )}
         {processingState === 'ready' && <div className="processing-actions"><button className="button button--primary button--large" type="button" onClick={() => onStepChange('quiz')}>기억 확인 시작하기</button><button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
-        {processingState === 'error' && <div className="processing-actions">{audioRef.current && <button className="button button--primary button--large" type="button" onClick={retryTranscription}>전사 다시 시도하기</button>}<button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button><button className="skip-link" type="button" onClick={continueWithFallback}>기본 질문으로 계속하기</button></div>}
+        {isReviewError && (
+          <div className="processing-actions">
+            <button className="button button--primary button--large" type="button" onClick={() => runReviewGeneration(transcript)}>질문 만들기 다시 시도</button>
+            <button className="button button--secondary" type="button" onClick={() => onStepChange('results')}>전사문만 저장하기</button>
+            <button className="skip-link" type="button" onClick={recordAgain}>다시 녹음하기</button>
+          </div>
+        )}
+        {processingState === 'error' && <div className="processing-actions">{audioRef.current && <button className="button button--primary button--large" type="button" onClick={retryTranscription}>전사 다시 시도하기</button>}<button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
       </div>
     )
   }
 
-  if (step === 'quiz') {
+  if (step === 'quiz' && review && review.questions.length > 0) {
     const quizQuestions = review.questions
     const question = quizQuestions[Math.min(quizIndex, quizQuestions.length - 1)]
     const selected = answers.find((answer) => answer.questionId === question.id)?.answer
@@ -197,7 +228,7 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
       <div className="flow-page quiz-page">
         <div className="quiz-progress"><span>{quizIndex + 1} / {quizQuestions.length}</span><div><i style={{ width: `${((quizIndex + 1) / quizQuestions.length) * 100}%` }} /></div></div>
         <section className="flow-intro">
-          <SourceBadge>{reviewSource === 'ai' ? '전사 기반 AI 질문' : '기본 기억 확인 질문'}</SourceBadge>
+          <SourceBadge>전사 기반 AI 질문</SourceBadge>
           <p className="eyebrow">기억 확인</p>
           <h1>{question.question}</h1>
           <p>시험이 아니에요. 기억나는 대로 골라 주세요.</p>
@@ -211,6 +242,32 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
         </div>
         <button className="skip-link" type="button" onClick={() => onAnswer({ questionId: question.id, answer: '잘 모르겠어요' })}>잘 모르겠어요</button>
         <div className="sticky-actions"><button className="button button--primary button--large" type="button" disabled={!selected} onClick={() => { if (quizIndex === quizQuestions.length - 1) { recorder.destroyRecording(); onStepChange('results') } else { setQuizIndex((current) => current + 1) } }}>{quizIndex === quizQuestions.length - 1 ? '결과 확인하기' : '다음 질문'}</button></div>
+      </div>
+    )
+  }
+
+  if (!review) {
+    // AI 질문 생성에 실패했거나 건너뛴 경우: 전사문만 저장하는 결과 화면.
+    return (
+      <div className="flow-page results-page">
+        <section className="flow-intro">
+          <p className="eyebrow">진료 기록</p>
+          <h1>전사된 진료 내용을<br />그대로 저장할 수 있어요.</h1>
+          <p>기억 확인 질문은 만들지 못했어요. 진료에서 들은 내용은 아래 전사문과 의료진의 안내를 기준으로 확인해 주세요.</p>
+        </section>
+        {transcript ? (
+          <section className="processing-transcript">
+            <div><FileText /><h2>전사된 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
+            <p>{transcript}</p>
+          </section>
+        ) : (
+          <p className="inline-error" role="alert">저장할 전사 내용이 없습니다. 다시 녹음해 주세요.</p>
+        )}
+        <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>전사된 글만 의료수첩에 저장할 수 있어요.</span></p></div>
+        <div className="sticky-actions">
+          {transcript && <button className="button button--primary button--large" type="button" onClick={onSaveResults}>전사문 의료수첩에 저장하기</button>}
+          <button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button>
+        </div>
       </div>
     )
   }

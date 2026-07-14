@@ -1,21 +1,48 @@
-import { useCallback, useEffect, useState } from 'react'
-import { generateVisitSummary, getLlmHealth, getSession, loadCloudState, logIn, logOut, saveCloudState, signUp } from './api'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  StateConflictError,
+  acceptInvitationApi,
+  cancelFamilyInvitationApi,
+  createFamilyInvitationApi,
+  deleteAccount as deleteAccountApi,
+  findInvitationByCode,
+  generateVisitSummary,
+  getLlmHealth,
+  getSession,
+  loadCloudState,
+  loadFamilyData,
+  loadRecordSlices,
+  logIn,
+  logOut,
+  saveAppointments,
+  saveCloudState,
+  saveVisitRecords,
+  signUp,
+} from './api'
+import type { RecordSlices } from './api'
+import { appointmentTypeLabels, sortAppointments, todayDateKey } from './appointments'
 import { AppShell } from './components/AppShell'
-import { createSummary, evaluateVisitReview, fallbackVisitReview, initialState } from './data'
+import { createSummary, emptySummary, evaluateVisitReview, initialState } from './data'
+import { createId } from './id'
+import { buildHealthLog, summarizeRecentMetrics } from './metrics'
+import { checkAppointmentReminders, checkMedicationReminders } from './notifications'
+import { emptyProfile, isProfileComplete, normalizeProfile } from './profiles'
 import { AcceptInvite } from './screens/AcceptInvite'
 import { Account } from './screens/Account'
 import { Calendar } from './screens/Calendar'
 import { Family } from './screens/Family'
 import { Home } from './screens/Home'
+import { Medications } from './screens/Medications'
 import { Notebook } from './screens/Notebook'
 import { Onboarding } from './screens/Onboarding'
 import { PrepareVisit } from './screens/PrepareVisit'
+import { ProfileSettings } from './screens/ProfileSettings'
 import { Settings } from './screens/Settings'
 import { ShareSettings } from './screens/ShareSettings'
 import { FamilyInvite } from './screens/FamilyInvite'
 import { VisitRecordDetail } from './screens/VisitRecordDetail'
 import { VisitFlow } from './screens/VisitFlow'
-import type { AppointmentInput, AppState, AppStep, AuthStatus, AuthUser, FamilyInvitation, QuizAnswer, SyncStatus, Tab, VisitRecord } from './types'
+import type { AppointmentInput, AppState, AppStep, AuthStatus, AuthUser, FamilyInvitation, MedicalAppointment, MedicationSlot, QuizAnswer, SyncStatus, Tab, VisitRecord } from './types'
 
 const STORAGE_KEY = 'medibuddy-demo-state'
 const flowSteps: AppStep[] = ['symptom', 'review', 'summary', 'consent', 'recording', 'processing', 'quiz', 'results']
@@ -31,18 +58,69 @@ function loadState(): AppState {
 }
 
 function normalizeState(parsed: Partial<AppState>): AppState {
+  const migrated = removeLegacyDemoData(parsed)
+  // 예전 버전에서 저장된 고정 폴백 질문은 실제 진료 내용이 아니므로 버린다.
+  const hasAiReview = migrated.reviewSource === 'ai' && Boolean(migrated.visitReview?.questions?.length)
   return {
     ...initialState,
-    ...parsed,
-    settings: { ...initialState.settings, ...parsed.settings },
-    sharePreferences: { ...initialState.sharePreferences, ...parsed.sharePreferences },
-    visitRecords: parsed.visitRecords ?? initialState.visitRecords,
-    familyInvitations: parsed.familyInvitations ?? initialState.familyInvitations,
-    familyMembers: parsed.familyMembers ?? initialState.familyMembers,
-    appointments: parsed.appointments ?? initialState.appointments,
-    visitReview: parsed.visitReview?.questions?.length ? parsed.visitReview : initialState.visitReview,
+    ...migrated,
+    profile: { ...emptyProfile, ...migrated.profile },
+    settings: { ...initialState.settings, ...migrated.settings },
+    sharePreferences: { ...initialState.sharePreferences, ...migrated.sharePreferences },
+    visitRecords: (migrated.visitRecords ?? initialState.visitRecords).map((record) => ({
+      ...record,
+      reviewSource: record.reviewSource === 'ai' ? 'ai' : record.reviewSource ? 'none' : undefined,
+    })),
+    familyInvitations: migrated.familyInvitations ?? initialState.familyInvitations,
+    familyMembers: migrated.familyMembers ?? initialState.familyMembers,
+    medications: migrated.medications ?? initialState.medications,
+    medicationIntakes: migrated.medicationIntakes ?? initialState.medicationIntakes,
+    appointments: (migrated.appointments ?? initialState.appointments).map((appointment) => ({
+      ...appointment,
+      status: appointment.status ?? 'scheduled',
+    })),
+    visitReview: hasAiReview ? migrated.visitReview ?? null : null,
+    reviewSource: hasAiReview ? 'ai' : 'none',
+    activeVisitRole: migrated.activeVisitRole ?? migrated.role ?? 'self',
+    activeAppointmentId: null,
     selectedVisitId: null,
     step: 'home',
+  }
+}
+
+// 서버에는 일정·진료 기록을 뺀 나머지만 상태 JSON으로 저장한다(분리 저장).
+function stripRecordSlices(state: AppState): AppState {
+  return { ...state, appointments: [], visitRecords: [] }
+}
+
+// 개별 테이블에서 불러온 슬라이스를 상태에 합친다. 서버 슬라이스가 비어 있으면
+// 아직 마이그레이션 전이므로 상태 JSON에 남아 있던 값을 그대로 사용한다.
+function withRecordSlices(state: AppState, slices: RecordSlices): AppState {
+  return {
+    ...state,
+    appointments: slices.appointments.length
+      ? slices.appointments.map((appointment) => ({ ...appointment, status: appointment.status ?? 'scheduled' }))
+      : state.appointments,
+    visitRecords: slices.visitRecords.length ? slices.visitRecords : state.visitRecords,
+  }
+}
+
+function removeLegacyDemoData(parsed: Partial<AppState>): Partial<AppState> {
+  const demoSymptom = '요즘 새벽에 발이 저리고, 오늘 아침 공복 혈당은 130이었어요.'
+  const hasDemoSymptom = parsed.symptomInput === demoSymptom
+  const isLegacyProfile = !parsed.profile?.userName
+  return {
+    ...parsed,
+    symptomInput: hasDemoSymptom ? '' : parsed.symptomInput,
+    summary: hasDemoSymptom ? emptySummary : parsed.summary,
+    tasks: parsed.tasks?.filter((task) => !(
+      (task.id === 'medication' && task.label === '식후 30분 약 챙겨 먹기')
+      || (task.id === 'walk' && task.label === '가벼운 산책 20분')
+    )),
+    healthLogs: parsed.healthLogs?.filter((log) => log.id !== 'initial-log'),
+    visitRecords: parsed.visitRecords?.filter((record) => record.id !== 'visit-2026-10-25'),
+    familyMembers: parsed.familyMembers?.filter((member) => member.id !== 'family-kim-younghee'),
+    sharePreferences: isLegacyProfile ? { ...initialState.sharePreferences, ...parsed.sharePreferences, enabled: false } : parsed.sharePreferences,
   }
 }
 
@@ -50,12 +128,15 @@ export function App() {
   const [state, setState] = useState<AppState>(loadState)
   const [notice, setNotice] = useState('')
   const [incomingInviteCode, setIncomingInviteCode] = useState(() => new URLSearchParams(window.location.search).get('invite'))
+  const [serverInvite, setServerInvite] = useState<{ status: 'idle' | 'loading' | 'ready'; invitation: FamilyInvitation | null }>({ status: 'idle', invitation: null })
   const [llm, setLlm] = useState<{ status: 'checking' | 'connected' | 'unavailable'; model: string | null }>({ status: 'checking', model: null })
   const [aiGeneration, setAiGeneration] = useState<{ loading: boolean; notice: string; model: string | null }>({ loading: false, notice: '', model: null })
   const [authStatus, setAuthStatus] = useState<AuthStatus>('checking')
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle')
   const [cloudReady, setCloudReady] = useState(false)
+  const lastSyncedAtRef = useRef<string | null>(null)
+  const syncedSlicesRef = useRef<{ appointments: AppState['appointments'] | null; visitRecords: AppState['visitRecords'] | null }>({ appointments: null, visitRecords: null })
 
   useEffect(() => {
     if (authStatus === 'anonymous') window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
@@ -86,12 +167,17 @@ export function App() {
       setAuthStatus('authenticated')
       setSyncStatus('syncing')
       try {
-        const cloud = await loadCloudState(controller.signal)
+        const [cloud, slices] = await Promise.all([loadCloudState(controller.signal), loadRecordSlices(controller.signal)])
         if (!active) return
         if (cloud.state) {
-          setState(normalizeState(cloud.state))
+          setState(withRecordSlices(normalizeState(cloud.state), slices))
+          lastSyncedAtRef.current = cloud.updatedAt
         } else {
-          await saveCloudState(loadState(), controller.signal)
+          const local = withRecordSlices(loadState(), slices)
+          const saved = await saveCloudState(stripRecordSlices(local), null, controller.signal)
+          lastSyncedAtRef.current = saved.updatedAt
+          if (!active) return
+          setState(local)
         }
         if (!active) return
         window.localStorage.removeItem(STORAGE_KEY)
@@ -122,6 +208,9 @@ export function App() {
           familyMembers: updated.familyMembers ?? current.familyMembers,
           sharePreferences: updated.sharePreferences ?? current.sharePreferences,
           appointments: updated.appointments ?? current.appointments,
+          profile: updated.profile ?? current.profile,
+          role: updated.role ?? current.role,
+          hasOnboarded: updated.hasOnboarded ?? current.hasOnboarded,
         }))
       } catch {
         // Ignore malformed data written by another tab.
@@ -136,10 +225,36 @@ export function App() {
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
       setSyncStatus('syncing')
-      saveCloudState(state, controller.signal)
+      const jobs: Promise<unknown>[] = [
+        saveCloudState(stripRecordSlices(state), lastSyncedAtRef.current, controller.signal)
+          .then((saved) => { lastSyncedAtRef.current = saved.updatedAt }),
+      ]
+      // 일정·진료 기록은 바뀐 슬라이스만 개별 API로 저장한다.
+      if (syncedSlicesRef.current.appointments !== state.appointments) {
+        jobs.push(saveAppointments(state.appointments, controller.signal)
+          .then(() => { syncedSlicesRef.current.appointments = state.appointments }))
+      }
+      if (syncedSlicesRef.current.visitRecords !== state.visitRecords) {
+        jobs.push(saveVisitRecords(state.visitRecords, controller.signal)
+          .then(() => { syncedSlicesRef.current.visitRecords = state.visitRecords }))
+      }
+      Promise.all(jobs)
         .then(() => setSyncStatus('saved'))
         .catch((error) => {
-          if (!isAbortError(error)) setSyncStatus('error')
+          if (isAbortError(error)) return
+          if (error instanceof StateConflictError) {
+            // 다른 기기에서 먼저 저장한 기록이 있으면 덮어쓰지 않고 서버 기록을 따른다.
+            // 일정·진료 기록은 별도 API로 동기화되므로 현재 값을 유지한다.
+            lastSyncedAtRef.current = error.serverUpdatedAt
+            if (error.serverState) {
+              const serverState = error.serverState
+              setState((current) => ({ ...normalizeState(serverState), appointments: current.appointments, visitRecords: current.visitRecords }))
+            }
+            setSyncStatus('saved')
+            setNotice('다른 기기에서 저장한 최신 기록을 불러왔어요.')
+            return
+          }
+          setSyncStatus('error')
         })
     }, 700)
     return () => {
@@ -148,6 +263,18 @@ export function App() {
     }
   }, [authStatus, cloudReady, state])
 
+  // 로그인 상태에서는 가족 초대·연결 정보를 서버에서 불러온다(기기와 무관하게 동작).
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !cloudReady) return
+    const controller = new AbortController()
+    loadFamilyData(controller.signal)
+      .then((family) => setState((current) => ({ ...current, familyInvitations: family.invitations, familyMembers: family.members })))
+      .catch((error) => {
+        if (!isAbortError(error)) setNotice('가족 연결 정보를 불러오지 못했어요.')
+      })
+    return () => controller.abort()
+  }, [authStatus, cloudReady])
+
   useEffect(() => {
     const controller = new AbortController()
     getLlmHealth(controller.signal)
@@ -155,6 +282,30 @@ export function App() {
       .catch(() => setLlm({ status: 'unavailable', model: null }))
     return () => controller.abort()
   }, [])
+
+  // 브라우저 알림: 앱을 사용하는 동안 하루 전·당일 일정과 복약 시간을 알려준다.
+  useEffect(() => {
+    const hasPreparedSummary = state.summary.questions.length > 0
+    function runReminderChecks() {
+      checkAppointmentReminders(state.appointments, state.settings, hasPreparedSummary)
+      checkMedicationReminders(state.medications, state.medicationIntakes, state.settings)
+    }
+    runReminderChecks()
+    const timer = window.setInterval(runReminderChecks, 10 * 60 * 1000)
+    return () => window.clearInterval(timer)
+  }, [state.appointments, state.settings, state.summary.questions.length, state.medications, state.medicationIntakes])
+
+  useEffect(() => {
+    if (!incomingInviteCode || authStatus !== 'authenticated') return
+    const controller = new AbortController()
+    setServerInvite({ status: 'loading', invitation: null })
+    findInvitationByCode(incomingInviteCode, controller.signal)
+      .then((invitation) => setServerInvite({ status: 'ready', invitation: invitation?.status === 'pending' ? invitation : null }))
+      .catch((error) => {
+        if (!isAbortError(error)) setServerInvite({ status: 'ready', invitation: null })
+      })
+    return () => controller.abort()
+  }, [incomingInviteCode, authStatus])
 
   useEffect(() => {
     if (!notice) return
@@ -180,11 +331,15 @@ export function App() {
     setSyncStatus('syncing')
 
     try {
-      const cloud = await loadCloudState()
+      const [cloud, slices] = await Promise.all([loadCloudState(), loadRecordSlices()])
       if (cloud.state) {
-        setState({ ...normalizeState(cloud.state), step: 'account' })
+        setState({ ...withRecordSlices(normalizeState(cloud.state), slices), step: 'account' })
+        lastSyncedAtRef.current = cloud.updatedAt
       } else {
-        await saveCloudState(state)
+        const local = withRecordSlices(state, slices)
+        const saved = await saveCloudState(stripRecordSlices(local), null)
+        lastSyncedAtRef.current = saved.updatedAt
+        setState({ ...local, step: 'account' })
       }
       window.localStorage.removeItem(STORAGE_KEY)
       setCloudReady(true)
@@ -203,19 +358,55 @@ export function App() {
     setAuthStatus('anonymous')
     setCloudReady(false)
     setSyncStatus('idle')
+    lastSyncedAtRef.current = null
+    syncedSlicesRef.current = { appointments: null, visitRecords: null }
     setState({ ...initialState, hasOnboarded: true, step: 'account' })
     setNotice('로그아웃했어요. 이 기기에서는 계정 기록을 지웠어요.')
   }
 
-  function startPreparation(role: 'self' | 'family') {
+  async function handleDeleteAccount() {
+    await deleteAccountApi()
+    window.localStorage.removeItem(STORAGE_KEY)
+    setAuthUser(null)
+    setAuthStatus('anonymous')
+    setCloudReady(false)
+    setSyncStatus('idle')
+    lastSyncedAtRef.current = null
+    syncedSlicesRef.current = { appointments: null, visitRecords: null }
+    setState({ ...initialState })
+    setNotice('계정과 서버에 저장된 모든 기록을 삭제했어요.')
+  }
+
+  // visitTarget은 이번 진료 준비의 대상일 뿐, 프로필 역할(state.role)은 바꾸지 않는다.
+  function startPreparation(visitTarget: 'self' | 'family') {
     setAiGeneration({ loading: false, notice: '', model: null })
-    setState((current) => ({ ...current, role, tab: role === 'family' ? 'family' : 'home', step: 'symptom', answers: [], consented: false, visitTranscript: '', transcriptionModel: null, visitReview: fallbackVisitReview, reviewModel: null, reviewSource: 'fallback' }))
+    setState((current) => {
+      const defaultAppointment = sortAppointments(current.appointments)
+        .find((appointment) => appointment.status === 'scheduled' && appointment.date >= todayDateKey())
+      return {
+        ...current,
+        activeVisitRole: visitTarget,
+        activeAppointmentId: defaultAppointment?.id ?? null,
+        tab: visitTarget === 'family' ? 'family' : 'home',
+        step: 'symptom',
+        answers: [],
+        consented: false,
+        visitTranscript: '',
+        transcriptionModel: null,
+        visitReview: null,
+        reviewModel: null,
+        reviewSource: 'none',
+      }
+    })
   }
 
   async function prepareVisitWithAi() {
     setAiGeneration({ loading: true, notice: '', model: null })
     try {
-      const result = await generateVisitSummary(state.symptomInput, state.role)
+      // 직접 기록한 최근 수치(혈당·혈압·체중)를 함께 전달해 질문 카드에 반영한다.
+      const metricsNote = summarizeRecentMetrics(state.healthLogs)
+      const inputText = metricsNote ? `${state.symptomInput}\n\n[직접 기록한 최근 수치] ${metricsNote}` : state.symptomInput
+      const result = await generateVisitSummary(inputText, state.activeVisitRole)
       setState((current) => ({ ...current, summary: result.summary, step: 'review' }))
       setLlm({ status: 'connected', model: result.model })
       setAiGeneration({ loading: false, notice: '', model: result.model })
@@ -250,9 +441,14 @@ export function App() {
     setIncomingInviteCode(null)
   }
 
-  function createFamilyInvitation(name: string, relationship: string) {
+  async function createFamilyInvitation(name: string, relationship: string): Promise<FamilyInvitation> {
+    if (authStatus === 'authenticated') {
+      const invitation = await createFamilyInvitationApi(name, relationship)
+      setState((current) => ({ ...current, familyInvitations: [invitation, ...current.familyInvitations] }))
+      return invitation
+    }
     const invitation: FamilyInvitation = {
-      id: crypto.randomUUID(),
+      id: createId(),
       code: createInviteCode(),
       name,
       relationship,
@@ -263,14 +459,51 @@ export function App() {
     return invitation
   }
 
+  function cancelFamilyInvitation(id: string) {
+    if (authStatus === 'authenticated') {
+      cancelFamilyInvitationApi(id).catch(() => setNotice('서버에서 초대를 취소하지 못했어요.'))
+    }
+    setState((current) => ({ ...current, familyInvitations: current.familyInvitations.map((invitation) => invitation.id === id ? { ...invitation, status: 'cancelled' } : invitation) }))
+  }
+
   function saveAppointment(input: AppointmentInput, appointmentId?: string) {
     setState((current) => ({
       ...current,
       appointments: appointmentId
         ? current.appointments.map((appointment) => appointment.id === appointmentId ? { ...appointment, ...input } : appointment)
-        : [...current.appointments, { ...input, id: crypto.randomUUID(), createdAt: new Date().toISOString() }],
+        : [...current.appointments, { ...input, id: createId(), status: 'scheduled', createdAt: new Date().toISOString() }],
     }))
     setNotice(appointmentId ? '병원 일정을 수정했어요.' : '병원 일정을 등록했어요.')
+  }
+
+  function addMedication(name: string, slots: MedicationSlot[], memo: string) {
+    setState((current) => ({
+      ...current,
+      medications: [...current.medications, { id: createId(), name, slots, memo, createdAt: new Date().toISOString() }],
+    }))
+    setNotice('약을 등록했어요. 홈에서 매일 체크할 수 있어요.')
+  }
+
+  function deleteMedication(medicationId: string) {
+    setState((current) => ({
+      ...current,
+      medications: current.medications.filter((medication) => medication.id !== medicationId),
+      medicationIntakes: current.medicationIntakes.filter((intake) => intake.medicationId !== medicationId),
+    }))
+    setNotice('약을 목록에서 삭제했어요.')
+  }
+
+  function toggleMedicationIntake(medicationId: string, slot: MedicationSlot) {
+    const today = todayDateKey()
+    setState((current) => {
+      const existing = current.medicationIntakes.find((intake) => intake.medicationId === medicationId && intake.slot === slot && intake.date === today)
+      return {
+        ...current,
+        medicationIntakes: existing
+          ? current.medicationIntakes.filter((intake) => intake.id !== existing.id)
+          : [...current.medicationIntakes, { id: createId(), medicationId, slot, date: today, takenAt: new Date().toISOString() }],
+      }
+    })
   }
 
   function deleteAppointment(appointmentId: string) {
@@ -278,26 +511,72 @@ export function App() {
     setNotice('병원 일정을 삭제했어요.')
   }
 
-  const incomingInvitation = incomingInviteCode
+  function deleteVisitTranscript(recordId: string) {
+    setState((current) => ({
+      ...current,
+      visitRecords: current.visitRecords.map((record) => record.id === recordId ? { ...record, transcript: undefined, transcriptionModel: undefined } : record),
+    }))
+    setNotice('이 기록의 전사문을 삭제했어요.')
+  }
+
+  function deleteVisitRecord(recordId: string) {
+    setState((current) => ({
+      ...current,
+      visitRecords: current.visitRecords.filter((record) => record.id !== recordId),
+      selectedVisitId: null,
+      step: 'home',
+      tab: 'notebook',
+    }))
+    setNotice('진료 기록을 삭제했어요.')
+  }
+
+  function exportMyData() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `medibuddy-export-${todayDateKey()}.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    setNotice('내 기록을 파일로 내려받았어요.')
+  }
+
+  const localInvitation = incomingInviteCode
     ? state.familyInvitations.find((invitation) => invitation.code === incomingInviteCode && invitation.status === 'pending') ?? null
     : null
 
   if (incomingInviteCode) {
+    const waitingForLookup = authStatus === 'checking' || (authStatus === 'authenticated' && serverInvite.status !== 'ready')
+    if (waitingForLookup) {
+      return <main className="invite-accept-page"><p role="status">초대 정보를 확인하고 있어요…</p></main>
+    }
+    const invitation = authStatus === 'authenticated' ? serverInvite.invitation : localInvitation
     return (
       <AcceptInvite
-        invitation={incomingInvitation}
+        invitation={invitation}
+        needsLogin={authStatus !== 'authenticated'}
         onAccept={() => {
-          if (!incomingInvitation) return
+          if (!invitation) return
+          if (authStatus === 'authenticated') {
+            acceptInvitationApi(invitation.code)
+              .then((family) => {
+                setState((current) => ({ ...current, hasOnboarded: true, tab: 'family', step: 'home', familyInvitations: family.invitations, familyMembers: family.members }))
+                closeInvitationLink()
+                setNotice('가족 연결이 완료됐어요.')
+              })
+              .catch((error) => setNotice(error instanceof Error ? error.message : '초대를 수락하지 못했어요.'))
+            return
+          }
           setState((current) => ({
             ...current,
             hasOnboarded: true,
             tab: 'family',
             step: 'home',
-            familyInvitations: current.familyInvitations.map((invitation) => invitation.id === incomingInvitation.id ? { ...invitation, status: 'accepted' } : invitation),
-            familyMembers: current.familyMembers.some((member) => member.id === `invite-${incomingInvitation.id}`) ? current.familyMembers : [...current.familyMembers, {
-              id: `invite-${incomingInvitation.id}`,
-              name: incomingInvitation.name,
-              relationship: incomingInvitation.relationship,
+            familyInvitations: current.familyInvitations.map((item) => item.id === invitation.id ? { ...item, status: 'accepted' } : item),
+            familyMembers: current.familyMembers.some((member) => member.id === `invite-${invitation.id}`) ? current.familyMembers : [...current.familyMembers, {
+              id: `invite-${invitation.id}`,
+              name: invitation.name,
+              relationship: invitation.relationship,
               conditions: [],
               connectedAt: new Date().toISOString(),
             }],
@@ -310,18 +589,22 @@ export function App() {
     )
   }
 
-  if (!state.hasOnboarded) {
+  if (!state.hasOnboarded || !isProfileComplete(state.profile, state.role)) {
     return (
       <Onboarding
         role={state.role}
-        onRoleChange={(role) => setState((current) => ({ ...current, role }))}
-        onStart={() => setState((current) => ({ ...current, hasOnboarded: true, tab: current.role === 'family' ? 'family' : 'home' }))}
+        profile={state.profile}
+        onRoleChange={(role) => setState((current) => ({ ...current, role, activeVisitRole: role }))}
+        onProfileChange={(profile) => setState((current) => ({ ...current, profile }))}
+        onStart={() => setState((current) => ({ ...current, profile: normalizeProfile(current.profile, current.role), hasOnboarded: true, tab: current.role === 'family' ? 'family' : 'home' }))}
       />
     )
   }
 
   const isFlow = state.step !== 'home'
   const selectedVisit = state.visitRecords.find((record) => record.id === state.selectedVisitId)
+  const upcomingAppointments = sortAppointments(state.appointments)
+    .filter((appointment) => appointment.status === 'scheduled' && appointment.date >= todayDateKey())
 
   return (
     <>
@@ -332,13 +615,22 @@ export function App() {
         onGoHome={() => setTab('home')}
         fontSize={state.settings.fontSize}
         onOpenSettings={() => setStep('settings')}
+        onOpenProfile={() => setStep('profile')}
+        onOpenAccount={() => setStep('account')}
+        onLogout={() => { handleLogout().catch(() => setNotice('로그아웃하지 못했어요. 잠시 후 다시 시도해 주세요.')) }}
+        authStatus={authStatus}
       >
         {state.step === 'home' && state.tab === 'home' && (
           <Home
+            userName={state.profile.userName}
             tasks={state.tasks}
             healthLogs={state.healthLogs}
             appointments={state.appointments}
-            onPrepare={() => startPreparation('self')}
+            medications={state.medications}
+            medicationIntakes={state.medicationIntakes}
+            onToggleIntake={toggleMedicationIntake}
+            onManageMedications={() => setStep('medications')}
+            onPrepare={() => startPreparation(state.role === 'family' ? 'family' : 'self')}
             onOpenCalendar={() => setStep('calendar')}
             onToggleTask={(id) => setState((current) => ({ ...current, tasks: current.tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task) }))}
             onOpenNotebook={() => setTab('notebook')}
@@ -351,21 +643,26 @@ export function App() {
             healthLogs={state.healthLogs}
             visitRecords={state.visitRecords}
             onToggleTask={(id) => setState((current) => ({ ...current, tasks: current.tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task) }))}
-            onAddLog={(text) => setState((current) => ({ ...current, healthLogs: [{ id: crypto.randomUUID(), text, time: '방금 기록됨' }, ...current.healthLogs] }))}
+            onAddLog={(text) => setState((current) => ({ ...current, healthLogs: [buildHealthLog(text), ...current.healthLogs] }))}
             onOpenVisit={(selectedVisitId) => setState((current) => ({ ...current, selectedVisitId, step: 'visit-detail' }))}
           />
         )}
         {state.step === 'home' && state.tab === 'family' && (
           <Family
+            role={state.role}
+            profile={state.profile}
             preferences={state.sharePreferences}
             onToggleSharing={(enabled) => setState((current) => ({ ...current, sharePreferences: { ...current.sharePreferences, enabled } }))}
-            onPrepareForFamily={() => startPreparation('family')}
+            onPrepareForFamily={() => {
+              if (state.role === 'family') startPreparation('family')
+              else { setStep('profile'); setNotice('먼저 진료를 준비할 가족 정보를 등록해 주세요.') }
+            }}
             onOpenShareSettings={() => setStep('share-settings')}
             onInviteFamily={() => setStep('family-invite')}
             members={state.familyMembers}
             pendingInvitations={state.familyInvitations.filter((invitation) => invitation.status === 'pending')}
             sharedRecords={state.visitRecords}
-            onCancelInvitation={(id) => setState((current) => ({ ...current, familyInvitations: current.familyInvitations.map((invitation) => invitation.id === id ? { ...invitation, status: 'cancelled' } : invitation) }))}
+            onCancelInvitation={cancelFamilyInvitation}
             onOpenSharedVisit={(selectedVisitId) => setState((current) => ({ ...current, selectedVisitId, step: 'visit-detail' }))}
           />
         )}
@@ -374,22 +671,21 @@ export function App() {
             step={state.step}
             value={state.symptomInput}
             summary={state.summary}
-            familyMode={state.role === 'family'}
+            familyMode={state.activeVisitRole === 'family'}
+            patientName={state.profile.patientName}
             onValueChange={(symptomInput) => setState((current) => ({ ...current, symptomInput }))}
             onReview={prepareVisitWithAi}
             onCreateCard={() => setStep('summary')}
-            onStartVisit={() => {
-              if (state.role === 'family') {
-                setState((current) => ({ ...current, step: 'home', tab: 'family' }))
-                setNotice('김영희 님에게 질문 카드를 보냈어요.')
-              } else {
-                setStep('consent')
-              }
+            onStartVisit={() => setStep('consent')}
+            onSaveCard={() => {
+              setState((current) => ({ ...current, step: 'home', tab: 'family' }))
+              setNotice(`${state.profile.patientName} 님의 질문 카드를 저장했어요.`)
             }}
             onBack={handleBack}
             isGenerating={aiGeneration.loading}
             aiNotice={aiGeneration.notice}
             aiModel={aiGeneration.model}
+            recentMetricsNote={summarizeRecentMetrics(state.healthLogs)}
           />
         )}
         {(state.step === 'consent' || state.step === 'recording' || state.step === 'processing' || state.step === 'quiz' || state.step === 'results') && (
@@ -403,21 +699,33 @@ export function App() {
             review={state.visitReview}
             reviewModel={state.reviewModel}
             reviewSource={state.reviewSource}
+            upcomingAppointments={upcomingAppointments}
+            selectedAppointmentId={state.activeAppointmentId}
+            onSelectAppointment={(activeAppointmentId) => setState((current) => ({ ...current, activeAppointmentId }))}
             onConsentChange={(consented) => setState((current) => ({ ...current, consented }))}
             onStepChange={setStep}
             onAnswer={updateAnswer}
             onTranscriptionComplete={(visitTranscript, transcriptionModel) => setState((current) => ({ ...current, visitTranscript, transcriptionModel }))}
             onReviewComplete={(visitReview, reviewModel, reviewSource) => setState((current) => ({ ...current, visitReview, reviewModel, reviewSource, answers: [] }))}
             onSaveResults={() => {
-              const evaluation = evaluateVisitReview(state.visitReview, state.answers)
-              const record = createVisitRecord(state.summary, state.visitTranscript, state.transcriptionModel, evaluation, state.visitReview.actions, state.reviewModel, state.reviewSource)
+              const evaluation = state.visitReview
+                ? evaluateVisitReview(state.visitReview, state.answers)
+                : { remembered: [], corrected: [], unanswered: [] }
+              const relatedAppointment = state.activeAppointmentId
+                ? state.appointments.find((appointment) => appointment.id === state.activeAppointmentId)
+                : undefined
+              const record = createVisitRecord(state.profile.patientName, state.summary, state.visitTranscript, state.transcriptionModel, evaluation, state.visitReview?.actions ?? [], state.reviewModel, state.reviewSource, relatedAppointment)
               setState((current) => ({
                 ...current,
                 step: 'home',
                 tab: 'notebook',
                 selectedVisitId: record.id,
                 visitRecords: [record, ...current.visitRecords],
-                tasks: current.tasks.map((task) => ({ ...task, completed: false })),
+                appointments: relatedAppointment
+                  ? current.appointments.map((appointment) => appointment.id === relatedAppointment.id ? { ...appointment, status: 'completed' as const } : appointment)
+                  : current.appointments,
+                activeAppointmentId: null,
+                tasks: record.actions.map((action) => ({ id: createId(), label: action, completed: false, icon: inferTaskIcon(action) })),
               }))
               setNotice('진료 결과를 의료수첩에 저장했어요.')
             }}
@@ -430,8 +738,12 @@ export function App() {
             user={authUser}
             authStatus={authStatus}
             syncStatus={syncStatus}
+            role={state.role}
+            profile={state.profile}
             onChange={(settings) => setState((current) => ({ ...current, settings }))}
             onOpenAccount={() => setStep('account')}
+            onOpenProfile={() => setStep('profile')}
+            onExportData={exportMyData}
             onBack={handleBack}
           />
         )}
@@ -443,7 +755,17 @@ export function App() {
             onLogin={(email, password) => authenticate(logIn, email, password)}
             onSignUp={(email, password) => authenticate(signUp, email, password)}
             onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
             onBack={() => setStep('settings')}
+          />
+        )}
+        {state.step === 'medications' && (
+          <Medications
+            medications={state.medications}
+            intakes={state.medicationIntakes}
+            onAdd={addMedication}
+            onDelete={deleteMedication}
+            onBack={() => setStep('home')}
           />
         )}
         {state.step === 'calendar' && (
@@ -454,9 +776,21 @@ export function App() {
             onBack={() => setStep('home')}
           />
         )}
+        {state.step === 'profile' && (
+          <ProfileSettings
+            role={state.role}
+            profile={state.profile}
+            onSave={(role, profile) => {
+              setState((current) => ({ ...current, role, activeVisitRole: role, profile: normalizeProfile(profile, role), step: 'settings' }))
+              setNotice('사용자 정보를 저장했어요.')
+            }}
+            onBack={() => setStep('settings')}
+          />
+        )}
         {state.step === 'share-settings' && (
           <ShareSettings
             preferences={state.sharePreferences}
+            patientName={state.profile.patientName}
             onChange={(sharePreferences) => setState((current) => ({ ...current, sharePreferences }))}
             onSave={() => { setStep('home'); setNotice('가족 공유 설정을 저장했어요.') }}
             onBack={handleBack}
@@ -465,8 +799,9 @@ export function App() {
         {state.step === 'family-invite' && (
           <FamilyInvite
             pendingInvitations={state.familyInvitations.filter((invitation) => invitation.status === 'pending')}
+            isAccountConnected={authStatus === 'authenticated'}
             onCreate={createFamilyInvitation}
-            onCancel={(id) => setState((current) => ({ ...current, familyInvitations: current.familyInvitations.map((invitation) => invitation.id === id ? { ...invitation, status: 'cancelled' } : invitation) }))}
+            onCancel={cancelFamilyInvitation}
             onBack={handleBack}
           />
         )}
@@ -474,7 +809,13 @@ export function App() {
           <VisitRecordDetail
             record={selectedVisit}
             onPrepareAgain={() => {
-              setState((current) => ({ ...current, symptomInput: selectedVisit.summary.symptom, summary: selectedVisit.summary, role: 'self', step: 'review' }))
+              setState((current) => ({ ...current, symptomInput: selectedVisit.summary.symptom, summary: selectedVisit.summary, step: 'review' }))
+            }}
+            onDeleteTranscript={() => {
+              if (window.confirm('이 기록의 전사문을 삭제할까요? 삭제하면 되돌릴 수 없어요.')) deleteVisitTranscript(selectedVisit.id)
+            }}
+            onDeleteRecord={() => {
+              if (window.confirm('이 진료 기록 전체를 삭제할까요? 삭제하면 되돌릴 수 없어요.')) deleteVisitRecord(selectedVisit.id)
             }}
             onBack={handleBack}
           />
@@ -485,18 +826,19 @@ export function App() {
   )
 }
 
-function createVisitRecord(summary: AppState['summary'], transcript: string, transcriptionModel: string | null, evaluation: ReturnType<typeof evaluateVisitReview>, actions: string[], reviewModel: string | null, reviewSource: AppState['reviewSource']): VisitRecord {
+function createVisitRecord(patientName: string, summary: AppState['summary'], transcript: string, transcriptionModel: string | null, evaluation: ReturnType<typeof evaluateVisitReview>, actions: string[], reviewModel: string | null, reviewSource: AppState['reviewSource'], appointment?: MedicalAppointment): VisitRecord {
   const now = new Date()
   const month = new Intl.DateTimeFormat('ko-KR', { month: 'long' }).format(now)
   const day = new Intl.DateTimeFormat('ko-KR', { day: '2-digit' }).format(now).replace('일', '').trim()
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
+    patientName,
     date: new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long', timeStyle: 'short' }).format(now),
     day,
     month,
-    hospital: '성모병원',
-    department: '내과',
-    disease: '당뇨 정기 진료',
+    hospital: appointment?.hospital ?? '병원 정보 미입력',
+    department: appointment?.department ?? '진료과 미입력',
+    disease: appointment ? appointmentTypeLabels[appointment.type] : '진료 기록',
     summary,
     remembered: evaluation.remembered,
     corrected: evaluation.corrected,
@@ -506,6 +848,7 @@ function createVisitRecord(summary: AppState['summary'], transcript: string, tra
     transcriptionModel: transcriptionModel ?? undefined,
     reviewModel: reviewModel ?? undefined,
     reviewSource,
+    appointmentId: appointment?.id,
     createdAt: now.toISOString(),
   }
 }
@@ -514,6 +857,12 @@ function createInviteCode() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   const values = crypto.getRandomValues(new Uint8Array(6))
   return Array.from(values, (value) => alphabet[value % alphabet.length]).join('')
+}
+
+function inferTaskIcon(action: string): AppState['tasks'][number]['icon'] {
+  if (/약|복용/.test(action)) return 'pill'
+  if (/걷|산책|운동|스트레칭/.test(action)) return 'walk'
+  return 'water'
 }
 
 function isAbortError(error: unknown) {

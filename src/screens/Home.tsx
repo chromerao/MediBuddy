@@ -1,11 +1,17 @@
-import { CalendarDays, CalendarPlus, Check, CheckCircle2, ChevronRight, ClipboardPen, Footprints, LoaderCircle, Mic, Pill, Plus, Sparkles, Stethoscope, WifiOff } from 'lucide-react'
+import { CalendarDays, CalendarPlus, Check, CheckCircle2, ChevronRight, ClipboardPen, Footprints, LoaderCircle, Mic, Pill, Plus, Settings2, Sparkles, Stethoscope, WifiOff } from 'lucide-react'
 import { appointmentTypeLabels, formatAppointmentDate, formatDDay, sortAppointments, todayDateKey } from '../appointments'
-import type { HealthLog, MedicalAppointment, Task } from '../types'
+import { isIntakeTaken, medicationSlotLabels, medicationSlotOrder } from '../medications'
+import type { HealthLog, MedicalAppointment, Medication, MedicationIntake, MedicationSlot, Task } from '../types'
 
 interface HomeProps {
+  userName: string
   tasks: Task[]
   healthLogs: HealthLog[]
   appointments: MedicalAppointment[]
+  medications: Medication[]
+  medicationIntakes: MedicationIntake[]
+  onToggleIntake: (medicationId: string, slot: MedicationSlot) => void
+  onManageMedications: () => void
   onPrepare: () => void
   onOpenCalendar: () => void
   onToggleTask: (id: string) => void
@@ -15,14 +21,17 @@ interface HomeProps {
 
 const taskIcons = { pill: Pill, walk: Footprints, water: Plus }
 
-export function Home({ tasks, healthLogs, appointments, onPrepare, onOpenCalendar, onToggleTask, onOpenNotebook, llm }: HomeProps) {
-  const nextAppointment = sortAppointments(appointments).find((appointment) => appointment.date >= todayDateKey())
+export function Home({ userName, tasks, healthLogs, appointments, medications, medicationIntakes, onToggleIntake, onManageMedications, onPrepare, onOpenCalendar, onToggleTask, onOpenNotebook, llm }: HomeProps) {
+  const nextAppointment = sortAppointments(appointments).find((appointment) => appointment.status === 'scheduled' && appointment.date >= todayDateKey())
+  const today = todayDateKey()
+  const todayDoses = medicationSlotOrder.flatMap((slot) =>
+    medications.filter((medication) => medication.slots.includes(slot)).map((medication) => ({ medication, slot })))
 
   return (
     <div className="page-stack">
       <section className="greeting">
         <p className="eyebrow">오늘도 메디버디와 함께</p>
-        <h1>김영희 님,<br />안녕하세요.</h1>
+        <h1>{userName} 님,<br />안녕하세요.</h1>
         <p>다음 진료를 차근차근 준비해 볼까요?</p>
       </section>
       <div className={`ai-connection ai-connection--${llm.status}`} role="status">
@@ -66,8 +75,34 @@ export function Home({ tasks, healthLogs, appointments, onPrepare, onOpenCalenda
       </section>
 
       <section className="section-stack">
-        <div className="section-heading"><h2>오늘의 건강 실천</h2><span>{tasks.filter((task) => task.completed).length}/{tasks.length} 완료</span></div>
-        <div className="task-list">
+        <div className="section-heading">
+          <h2>오늘의 복약</h2>
+          <button className="heading-action" type="button" onClick={onManageMedications}><Settings2 aria-hidden="true" /> 약 관리</button>
+        </div>
+        {todayDoses.length > 0 ? (
+          <div className="task-list">
+            {todayDoses.map(({ medication, slot }) => {
+              const taken = isIntakeTaken(medicationIntakes, medication.id, slot, today)
+              return (
+                <button key={`${medication.id}-${slot}`} type="button" className={taken ? 'task-card is-complete' : 'task-card'} onClick={() => onToggleIntake(medication.id, slot)}>
+                  <span className="task-card__icon"><Pill /></span>
+                  <span>{medicationSlotLabels[slot]} · {medication.name}{medication.memo && <small className="dose-memo"> ({medication.memo})</small>}</span>
+                  <span className="task-card__check">{taken && <Check aria-label="복용 완료" />}</span>
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="task-empty">
+            <Pill aria-hidden="true" />
+            <p><strong>복용 중인 약을 등록해 보세요.</strong><small>매일 시간대별로 체크하고 알림을 받을 수 있어요.</small></p>
+          </div>
+        )}
+      </section>
+
+      <section className="section-stack">
+        <div className="section-heading"><h2>오늘의 건강 실천</h2><span>{tasks.length > 0 ? `${tasks.filter((task) => task.completed).length}/${tasks.length} 완료` : '진료 후 추가돼요'}</span></div>
+        {tasks.length > 0 ? <div className="task-list">
           {tasks.map((task) => {
             const Icon = taskIcons[task.icon]
             return (
@@ -78,7 +113,7 @@ export function Home({ tasks, healthLogs, appointments, onPrepare, onOpenCalenda
               </button>
             )
           })}
-        </div>
+        </div> : <div className="task-empty"><CheckCircle2 aria-hidden="true" /><p><strong>아직 실천 항목이 없어요.</strong><small>진료 후 정한 약속을 이곳에서 하나씩 확인할 수 있어요.</small></p></div>}
       </section>
 
       <section className="section-stack">

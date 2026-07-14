@@ -4,18 +4,19 @@ import { SourceBadge } from './SourceBadge'
 
 interface PatientSummaryCardProps {
   summary: VisitSummary
+  patientName: string
   familyAuthored?: boolean
   generatedByAi?: boolean
 }
 
-export function PatientSummaryCard({ summary, familyAuthored = false, generatedByAi = true }: PatientSummaryCardProps) {
+export function PatientSummaryCard({ summary, patientName, familyAuthored = false, generatedByAi = true }: PatientSummaryCardProps) {
   return (
     <article className="summary-card" aria-label="진료 준비 상태 카드">
       <div className="summary-card__header">
         <div>
           <p className="eyebrow">진료 준비 상태 카드</p>
-          <h2>환자 김영희</h2>
-          <p className="summary-card__meta"><CalendarDays size={18} /> 성모병원 내과 · 10월 25일</p>
+          <h2>{patientName} 님</h2>
+          <p className="summary-card__meta"><CalendarDays size={18} /> 진료 전 질문 카드</p>
         </div>
         <span className="summary-card__hospital" aria-hidden="true"><Stethoscope /></span>
       </div>

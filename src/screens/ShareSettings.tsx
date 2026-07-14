@@ -4,6 +4,7 @@ import type { SharePreferences } from '../types'
 
 interface ShareSettingsProps {
   preferences: SharePreferences
+  patientName: string
   onChange: (preferences: SharePreferences) => void
   onSave: () => void
   onBack: () => void
@@ -16,11 +17,11 @@ const scopes = [
   { key: 'healthLogs' as const, title: '한마디 건강 기록', description: '혈당·혈압 등 직접 기록한 수치를 공유해요.' },
 ]
 
-export function ShareSettings({ preferences, onChange, onSave, onBack }: ShareSettingsProps) {
+export function ShareSettings({ preferences, patientName, onChange, onSave, onBack }: ShareSettingsProps) {
   return (
     <div className="flow-page share-settings-page">
       <PageHeader title="기록 공유 설정" onBack={onBack} />
-      <section className="flow-intro"><span className="round-icon round-icon--soft"><ShieldCheck /></span><h1>어떤 기록을<br />공유할까요?</h1><p>선택한 내용만 김영희 님과 연결된 가족에게 보여요.</p></section>
+      <section className="flow-intro"><span className="round-icon round-icon--soft"><ShieldCheck /></span><h1>어떤 기록을<br />공유할까요?</h1><p>선택한 {patientName} 님의 기록만 연결된 가족에게 보여요.</p></section>
       <label className="master-share"><span><strong>가족 기록 공유</strong><small>끄면 모든 기록 공유가 즉시 중단돼요.</small></span><input type="checkbox" checked={preferences.enabled} onChange={(event) => onChange({ ...preferences, enabled: event.target.checked })} /></label>
       <section className={preferences.enabled ? 'scope-list' : 'scope-list is-disabled'} aria-disabled={!preferences.enabled}>
         {scopes.map((scope) => (
