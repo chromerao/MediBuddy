@@ -30,6 +30,56 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   }
 }
 
+export async function enableBackgroundNotifications(): Promise<string> {
+  if (!notificationsSupported() || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    throw new Error('이 브라우저에서는 백그라운드 알림을 지원하지 않아요.')
+  }
+  const permission = await requestNotificationPermission()
+  if (permission !== 'granted') throw new Error('브라우저 알림 권한을 허용해 주세요.')
+  const configResponse = await fetch('/api/notifications/config', { credentials: 'same-origin' })
+  const config = await configResponse.json() as { configured?: boolean; publicKey?: string | null }
+  if (!configResponse.ok || !config.configured || !config.publicKey) throw new Error('서버의 백그라운드 알림 키가 아직 설정되지 않았어요.')
+
+  const registration = await navigator.serviceWorker.ready
+  const existing = await registration.pushManager.getSubscription()
+  const subscription = existing ?? await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(config.publicKey),
+  })
+  const response = await fetch('/api/notifications/subscribe', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription.toJSON()),
+  })
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({})) as { error?: string }
+    throw new Error(payload.error ?? '백그라운드 알림을 등록하지 못했어요.')
+  }
+  return '앱을 닫아도 진료 일정 알림을 받을 수 있어요.'
+}
+
+export async function disableBackgroundNotifications() {
+  if (!('serviceWorker' in navigator)) return
+  const registration = await navigator.serviceWorker.ready
+  const subscription = await registration.pushManager?.getSubscription()
+  if (!subscription) return
+  await fetch('/api/notifications/subscribe', {
+    method: 'DELETE',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint: subscription.endpoint }),
+  }).catch(() => undefined)
+  await subscription.unsubscribe()
+}
+
+function urlBase64ToUint8Array(value: string) {
+  const padding = '='.repeat((4 - value.length % 4) % 4)
+  const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = window.atob(base64)
+  return Uint8Array.from([...raw].map((character) => character.charCodeAt(0)))
+}
+
 function loadNotifiedKeys(): Set<string> {
   try {
     const raw = window.localStorage.getItem(NOTIFIED_KEY)
@@ -70,7 +120,7 @@ function showPageNotification(title: string, options: NotificationOptions) {
   }
 }
 
-export function checkAppointmentReminders(appointments: MedicalAppointment[], settings: UserSettings, hasPreparedSummary: boolean) {
+export function checkAppointmentReminders(appointments: MedicalAppointment[], settings: UserSettings) {
   if (!notificationsSupported() || Notification.permission !== 'granted') return
   if (!settings.appointmentReminders && !settings.preparationReminders) return
 
@@ -95,7 +145,7 @@ export function checkAppointmentReminders(appointments: MedicalAppointment[], se
       }
     }
 
-    if (settings.preparationReminders && days === 1 && !hasPreparedSummary) {
+    if (settings.preparationReminders && days === 1 && appointment.preparation?.status !== 'ready') {
       const key = `preparation:${appointment.id}`
       if (!notified.has(key)) {
         showNotification('진료 준비를 해볼까요?', `${appointment.hospital} 진료 전에 궁금한 점을 질문 카드로 정리해 보세요.`)

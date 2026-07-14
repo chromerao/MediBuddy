@@ -12,7 +12,7 @@ interface HomeProps {
   medicationIntakes: MedicationIntake[]
   onToggleIntake: (medicationId: string, slot: MedicationSlot) => void
   onManageMedications: () => void
-  onPrepare: () => void
+  onPrepare: (appointmentId?: string) => void
   onOpenCalendar: () => void
   onToggleTask: (id: string) => void
   onOpenNotebook: () => void
@@ -23,6 +23,7 @@ const taskIcons = { pill: Pill, walk: Footprints, water: Plus }
 
 export function Home({ userName, tasks, healthLogs, appointments, medications, medicationIntakes, onToggleIntake, onManageMedications, onPrepare, onOpenCalendar, onToggleTask, onOpenNotebook, llm }: HomeProps) {
   const nextAppointment = sortAppointments(appointments).find((appointment) => appointment.status === 'scheduled' && appointment.date >= todayDateKey())
+  const isPrepared = nextAppointment?.preparation?.status === 'ready'
   const today = todayDateKey()
   const todayDoses = medicationSlotOrder.flatMap((slot) =>
     medications.filter((medication) => medication.slots.includes(slot)).map((medication) => ({ medication, slot })))
@@ -51,6 +52,7 @@ export function Home({ userName, tasks, healthLogs, appointments, medications, m
                 <h2>{nextAppointment.hospital} {nextAppointment.department} <span className="d-day">{formatDDay(nextAppointment.date)}</span></h2>
                 <p className="icon-text"><CalendarDays size={20} /> {formatAppointmentDate(nextAppointment.date, nextAppointment.time)}</p>
                 <span className={`appointment-type appointment-type--${nextAppointment.type}`}>{appointmentTypeLabels[nextAppointment.type]}</span>
+                <span className={isPrepared ? 'preparation-status is-ready' : 'preparation-status'}>{isPrepared ? '질문 카드 준비됨' : '질문 카드 준비 전'}</span>
               </div>
               <span className="round-icon"><Stethoscope aria-hidden="true" /></span>
             </div>
@@ -59,7 +61,7 @@ export function Home({ userName, tasks, healthLogs, appointments, medications, m
             </div>
             <div className="journey-actions">
               <button className="button button--secondary" type="button" onClick={onOpenCalendar}><CalendarDays aria-hidden="true" /> 일정 보기</button>
-              <button className="button button--primary" type="button" onClick={onPrepare}><ClipboardPen aria-hidden="true" /> 진료 준비하기</button>
+              <button className="button button--primary" type="button" onClick={() => onPrepare(nextAppointment.id)}><ClipboardPen aria-hidden="true" /> {isPrepared ? '질문 카드 보기' : '진료 준비하기'}</button>
             </div>
           </>
         ) : (
@@ -68,7 +70,7 @@ export function Home({ userName, tasks, healthLogs, appointments, medications, m
             <div><p className="eyebrow">다음 병원 일정</p><h2>예정된 일정이 없어요.</h2><p>진료나 수술 날짜를 등록하면 여기에서 바로 확인할 수 있어요.</p></div>
             <div className="journey-actions journey-actions--empty">
               <button className="button button--primary" type="button" onClick={onOpenCalendar}><CalendarPlus aria-hidden="true" /> 일정 등록하기</button>
-              <button className="button button--secondary" type="button" onClick={onPrepare}><ClipboardPen aria-hidden="true" /> 바로 진료 준비</button>
+              <button className="button button--secondary" type="button" onClick={() => onPrepare()}><ClipboardPen aria-hidden="true" /> 바로 진료 준비</button>
             </div>
           </div>
         )}

@@ -168,6 +168,7 @@ small { font-size: 15px; line-height: 1.5; }
 .flow-intro > p:last-child { color: var(--text-soft); }
 .flow-intro--center { align-items: center; text-align: center; }
 .family-context { padding: 12px 16px; color: #004d70; background: #e9f6ff; border: 1px solid #afd7ed; border-radius: 12px; font-size: 15px; font-weight: 700; text-align: center; }
+.appointment-context { padding: 11px 14px; color: #285136; background: var(--primary-soft); border: 1px solid #b8e7c1; border-radius: 12px; font-size: 14px; font-weight: 800; text-align: center; }
 .sticky-actions { position: sticky; z-index: 20; bottom: calc(82px + env(safe-area-inset-bottom)); margin-top: auto; padding: 14px 0 max(4px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #f9f9f9 24%); }
 .voice-button { width: 100%; min-height: 196px; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border); border-radius: 24px; background: white; cursor: pointer; }
 .voice-button > span { width: 82px; height: 82px; display: flex; align-items: center; justify-content: center; color: var(--primary-ink); border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 14px var(--primary-soft); }
@@ -244,6 +245,13 @@ input { min-height: 56px; padding: 12px 14px; }
 .summary-card__section { padding: 20px 22px; border-bottom: 1px solid #e1e7e1; }
 .summary-card__section h3 { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 18px; }
 .summary-card__measurement { display: flex; gap: 12px; color: #23452d; background: #f4fbf5; }
+.summary-card__sources { padding: 18px 22px; border-bottom: 1px solid #e1e7e1; background: #f8fbf8; }
+.summary-card__sources h3 { margin-bottom: 10px; display: flex; align-items: center; gap: 7px; font-size: 16px; }
+.summary-card__sources ul { display: grid; gap: 8px; }
+.summary-card__sources a { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text); border: 1px solid #dce8de; border-radius: 12px; background: white; text-decoration: none; }
+.summary-card__sources a span { display: flex; flex-direction: column; gap: 2px; }
+.summary-card__sources a small, .summary-card__sources > p { color: var(--text-soft); font-size: 13px; }
+.summary-card__sources a > svg { width: 17px; flex: 0 0 auto; color: var(--primary-dark); }
 .summary-card__footer { padding: 16px 22px; display: flex; flex-wrap: wrap; gap: 8px; }
 .question-list { margin: 12px 0 0; padding: 0; display: grid; gap: 12px; list-style: none; }
 .question-list li { display: grid; grid-template-columns: 34px 1fr; align-items: start; gap: 10px; }
@@ -354,6 +362,21 @@ input { min-height: 56px; padding: 12px 14px; }
 .pending-invite-list p, .shared-record-list p { display: flex; flex-direction: column; }
 .pending-invite-list small, .shared-record-list small { color: var(--text-soft); }
 .shared-record-list > button { min-height: 88px; padding: 12px; display: grid; grid-template-columns: 58px 1fr 24px; align-items: center; gap: 12px; text-align: left; border: 1px solid var(--border); border-radius: 16px; background: white; cursor: pointer; }
+.shared-family-section .section-heading > div { display: flex; align-items: baseline; gap: 8px; }
+.shared-family-bundle { padding: 16px; display: grid; gap: 16px; border: 1px solid #cfe6d4; border-radius: 20px; background: #f8fcf8; }
+.shared-family-bundle > header { display: flex; align-items: center; gap: 12px; }
+.shared-family-bundle > header h3 { font-size: 20px; }
+.shared-family-bundle > header small, .shared-record-meta { color: var(--text-soft); font-size: 13px; }
+.shared-preparation { display: grid; gap: 8px; }
+.shared-preparation .summary-card { box-shadow: none; }
+.remote-visit-card { padding: 15px; display: grid; gap: 8px; border: 1px solid var(--border); border-radius: 16px; background: white; }
+.remote-visit-card h4 { font-size: 17px; }
+.remote-visit-card p:not(.eyebrow) { display: grid; gap: 2px; color: var(--text-soft); font-size: 14px; }
+.remote-visit-card p strong { color: var(--text); }
+.shared-daily-summary { display: grid; gap: 8px; }
+.shared-daily-summary > p { padding: 11px; display: flex; align-items: flex-start; gap: 9px; border-radius: 12px; background: white; }
+.shared-daily-summary > p > span { display: flex; flex-direction: column; color: var(--text-soft); font-size: 14px; }
+.shared-daily-summary svg { width: 19px; color: var(--primary-dark); }
 
 .settings-page, .account-page, .profile-settings-page, .calendar-page, .share-settings-page, .invite-page, .visit-detail-page { max-width: 620px; margin: 0 auto; }
 .settings-card { padding: 20px; display: flex; flex-direction: column; gap: 18px; border: 1px solid var(--border); border-radius: 18px; background: white; }
@@ -456,6 +479,9 @@ input { min-height: 56px; padding: 12px 14px; }
 .appointment-type--surgery { color: #843226; background: #ffebe7; }
 .appointment-type--examination { color: #28566d; background: #e8f4fa; }
 .appointment-type--procedure { color: #684086; background: #f2eafb; }
+.preparation-status { width: fit-content; margin-top: 9px; padding: 5px 9px; display: inline-flex; align-items: center; gap: 5px; color: #66736a; background: #eef1ef; border-radius: 99px; font-size: 13px; font-weight: 800; }
+.preparation-status.is-ready { color: #155b2d; background: #dff6e4; }
+.preparation-status svg { width: 15px; height: 15px; }
 
 .appointment-form { padding: 22px; display: grid; gap: 18px; border: 2px solid var(--primary); border-radius: 20px; background: white; box-shadow: var(--shadow); scroll-margin-top: 86px; }
 .appointment-form__heading { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 14px; }
@@ -570,7 +596,8 @@ input { min-height: 56px; padding: 12px 14px; }
 }
 
 @media print {
-  .topbar, .bottom-nav, .sticky-actions { display: none !important; }
+  .topbar, .bottom-nav, .sticky-actions, .detail-actions, .flow-header, .icon-button, .toast { display: none !important; }
   .main { padding: 0; }
   .summary-card { box-shadow: none; break-inside: avoid; }
+  .record-result-card, .record-actions-card, .record-transcript-card { box-shadow: none; break-inside: avoid; }
 }

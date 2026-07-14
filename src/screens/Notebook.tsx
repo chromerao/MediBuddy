@@ -2,7 +2,7 @@ import { Activity, BookHeart, Check, ChevronRight, Mic, MicOff, Plus, Save } fro
 import { useState } from 'react'
 import { TrendChart } from '../components/TrendChart'
 import { formatMetric, getMetricPoints } from '../metrics'
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
+import { useServerSpeechInput } from '../hooks/useServerSpeechInput'
 import type { HealthLog, Task, VisitRecord } from '../types'
 
 interface NotebookProps {
@@ -16,7 +16,7 @@ interface NotebookProps {
 
 export function Notebook({ tasks, healthLogs, visitRecords, onToggleTask, onAddLog, onOpenVisit }: NotebookProps) {
   const [draft, setDraft] = useState('')
-  const speech = useSpeechRecognition({ onResult: setDraft })
+  const speech = useServerSpeechInput({ onResult: setDraft })
   const glucosePoints = getMetricPoints(healthLogs, 'glucose')
   const weightPoints = getMetricPoints(healthLogs, 'weight')
   const latestBloodPressure = healthLogs.find((log) => log.metric?.type === 'bloodPressure')?.metric
@@ -30,15 +30,15 @@ export function Notebook({ tasks, healthLogs, visitRecords, onToggleTask, onAddL
     <div className="page-stack notebook-page">
       <section className="greeting greeting--compact"><p className="eyebrow">일상에서도 이어지는 진료</p><h1>나의 의료수첩</h1><p>진료에서 정한 실천과 건강 수치를 쉽게 기록해요.</p></section>
       <section className="one-phrase-card">
-        <button className={speech.isListening ? 'notebook-voice-button is-listening' : 'notebook-voice-button'} type="button" onClick={speech.toggle} aria-pressed={speech.isListening}>
+        <button className={speech.isListening ? 'notebook-voice-button is-listening' : 'notebook-voice-button'} type="button" onClick={speech.toggle} aria-pressed={speech.isListening} disabled={speech.isProcessing}>
           {speech.isListening ? <MicOff /> : <Mic />}
-          <span>{speech.isListening ? '듣기 멈추기' : '말로 기록하기'}</span>
+          <span>{speech.isProcessing ? '글로 바꾸는 중…' : speech.isListening ? '듣기 멈추기' : '말로 기록하기'}</span>
         </button>
         <div><h2>오늘의 건강 수치를<br />한마디로 기록하세요.</h2><p>예: “오늘 아침 공복 혈당 130”</p></div>
         <label><span className="sr-only">건강 수치 입력</span><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') saveLog() }} placeholder="한마디 기록을 입력하세요" /></label>
         {speech.error && <p className="inline-error one-phrase-card__error" role="alert">{speech.error}</p>}
-        {speech.isListening && <p className="listening-status" role="status">말씀하신 내용을 듣고 있어요…</p>}
-        <button className="button button--primary" type="button" onClick={saveLog} disabled={!draft.trim()}><Save /> 기록 저장</button>
+        {(speech.isListening || speech.isProcessing) && <p className="listening-status" role="status">{speech.isProcessing ? '서버에서 음성을 글로 바꾸고 있어요…' : '말씀하신 내용을 듣고 있어요…'}</p>}
+        <button className="button button--primary" type="button" onClick={saveLog} disabled={!draft.trim() || speech.isListening || speech.isProcessing}><Save /> 기록 저장</button>
       </section>
       <section className="section-stack">
         <div className="section-heading"><h2>오늘의 실천 항목</h2><span>{tasks.filter((task) => task.completed).length}/{tasks.length}</span></div>

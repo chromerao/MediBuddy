@@ -1,4 +1,4 @@
-import { CalendarDays, HelpCircle, Pill, Stethoscope } from 'lucide-react'
+import { CalendarDays, ExternalLink, HelpCircle, Pill, ShieldCheck, Stethoscope } from 'lucide-react'
 import type { VisitSummary } from '../types'
 import { SourceBadge } from './SourceBadge'
 
@@ -39,6 +39,15 @@ export function PatientSummaryCard({ summary, patientName, familyAuthored = fals
             <li key={question}><span>{index + 1}</span><p>{question}</p></li>
           ))}
         </ol>
+      </div>
+
+      <div className="summary-card__sources">
+        <h3><ShieldCheck size={20} aria-hidden="true" /> 공공 의료문서 참고 근거</h3>
+        {summary.sources && summary.sources.length > 0 ? (
+          <ul>{summary.sources.map((source) => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer"><span><strong>{source.title}</strong><small>{source.organization} · 갱신 {source.updatedAt}</small></span><ExternalLink aria-hidden="true" /></a></li>)}</ul>
+        ) : (
+          <p>관련 공공 문서 근거가 없어 의료 정보는 추가하지 않고 입력 내용만 정리했어요.</p>
+        )}
       </div>
 
       <div className="summary-card__footer">

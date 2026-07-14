@@ -3,6 +3,7 @@ import { promisify } from 'node:util'
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
+import { buildSharedFamilyBundle } from './familySharing.mjs'
 
 const scryptAsync = promisify(scrypt)
 const sessionMaxAgeSeconds = 60 * 60 * 24 * 30
@@ -74,6 +75,20 @@ database.exec(`
     count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (subject, day)
   );
+  CREATE TABLE IF NOT EXISTS push_subscriptions (
+    endpoint TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    subscription_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS push_subscriptions_user_idx ON push_subscriptions(user_id);
+  CREATE TABLE IF NOT EXISTS reminder_deliveries (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    appointment_id TEXT NOT NULL,
+    reminder_type TEXT NOT NULL,
+    delivered_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, appointment_id, reminder_type)
+  );
 `)
 
 const findUserByEmailStatement = database.prepare('SELECT id, email, password_hash, password_salt, created_at FROM users WHERE email = ?')
@@ -111,6 +126,12 @@ const listConnectionsAsInviteeStatement = database.prepare(`
   JOIN users ON users.id = family_connections.inviter_user_id
   WHERE family_connections.invitee_user_id = ?
 `)
+const listShareOwnersStatement = database.prepare(`
+  SELECT family_connections.inviter_user_id AS owner_user_id, family_connections.relationship, users.email
+  FROM family_connections
+  JOIN users ON users.id = family_connections.inviter_user_id
+  WHERE family_connections.invitee_user_id = ?
+`)
 const listAppointmentsStatement = database.prepare('SELECT data_json FROM appointments WHERE user_id = ? ORDER BY id')
 const upsertAppointmentStatement = database.prepare(`
   INSERT INTO appointments (id, user_id, data_json, updated_at) VALUES (?, ?, ?, ?)
@@ -128,6 +149,16 @@ const consumeAiUsageStatement = database.prepare(`
   ON CONFLICT(subject, day) DO UPDATE SET count = count + 1
 `)
 const readAiUsageStatement = database.prepare('SELECT count FROM ai_usage WHERE subject = ? AND day = ?')
+const upsertPushSubscriptionStatement = database.prepare(`
+  INSERT INTO push_subscriptions (endpoint, user_id, subscription_json, updated_at) VALUES (?, ?, ?, ?)
+  ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, subscription_json = excluded.subscription_json, updated_at = excluded.updated_at
+`)
+const deletePushSubscriptionStatement = database.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?')
+const deletePushEndpointStatement = database.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?')
+const listPushSubscriptionsStatement = database.prepare('SELECT subscription_json FROM push_subscriptions WHERE user_id = ?')
+const listReminderUsersStatement = database.prepare('SELECT DISTINCT user_id FROM appointments')
+const hasReminderDeliveryStatement = database.prepare('SELECT 1 FROM reminder_deliveries WHERE user_id = ? AND appointment_id = ? AND reminder_type = ?')
+const insertReminderDeliveryStatement = database.prepare('INSERT OR IGNORE INTO reminder_deliveries (user_id, appointment_id, reminder_type, delivered_at) VALUES (?, ?, ?, ?)')
 
 export async function createAccount(email, password) {
   const normalizedEmail = normalizeEmail(email)
@@ -273,6 +304,24 @@ export function listFamilyMembers(userId) {
   return [...invited, ...inviters]
 }
 
+export function listSharedFamilyData(userId) {
+  const bundles = []
+  for (const owner of listShareOwnersStatement.all(userId)) {
+    const state = loadUserState(owner.owner_user_id).state
+    if (!state) continue
+    const bundle = buildSharedFamilyBundle({
+      ownerId: owner.owner_user_id,
+      ownerEmail: owner.email,
+      relationship: owner.relationship,
+      state,
+      appointments: listUserAppointments(owner.owner_user_id),
+      visitRecords: listUserVisitRecords(owner.owner_user_id),
+    })
+    if (bundle) bundles.push(bundle)
+  }
+  return bundles
+}
+
 export function listUserAppointments(userId) {
   return readRows(listAppointmentsStatement, userId)
 }
@@ -281,12 +330,46 @@ export function replaceUserAppointments(userId, items) {
   replaceRows(deleteAppointmentsStatement, upsertAppointmentStatement, userId, items)
 }
 
+export function upsertUserAppointment(userId, item) {
+  upsertAppointmentStatement.run(String(item.id), userId, JSON.stringify(item), new Date().toISOString())
+}
+
 export function listUserVisitRecords(userId) {
   return readRows(listVisitRecordsStatement, userId)
 }
 
 export function replaceUserVisitRecords(userId, items) {
   replaceRows(deleteVisitRecordsStatement, upsertVisitRecordStatement, userId, items)
+}
+
+export function savePushSubscription(userId, subscription) {
+  upsertPushSubscriptionStatement.run(subscription.endpoint, userId, JSON.stringify(subscription), new Date().toISOString())
+}
+
+export function deletePushSubscription(userId, endpoint) {
+  deletePushSubscriptionStatement.run(endpoint, userId)
+}
+
+export function deletePushEndpoint(endpoint) {
+  deletePushEndpointStatement.run(endpoint)
+}
+
+export function listPushSubscriptions(userId) {
+  return listPushSubscriptionsStatement.all(userId).flatMap((row) => {
+    try { return [JSON.parse(row.subscription_json)] } catch { return [] }
+  })
+}
+
+export function listReminderUserIds() {
+  return listReminderUsersStatement.all().map((row) => row.user_id)
+}
+
+export function hasReminderDelivery(userId, appointmentId, type) {
+  return Boolean(hasReminderDeliveryStatement.get(userId, appointmentId, type))
+}
+
+export function markReminderDelivered(userId, appointmentId, type) {
+  insertReminderDeliveryStatement.run(userId, appointmentId, type, new Date().toISOString())
 }
 
 function readRows(statement, userId) {

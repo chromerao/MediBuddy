@@ -1,4 +1,4 @@
-import type { AppState, AuthUser, FamilyInvitation, FamilyMember, MedicalAppointment, VisitRecord, VisitReview, VisitSummary } from './types'
+import type { AppState, AuthUser, FamilyInvitation, FamilyMember, MedicalAppointment, SharedFamilyBundle, VisitRecord, VisitReview, VisitSummary } from './types'
 
 export interface LlmHealth {
   configured: boolean
@@ -155,6 +155,13 @@ export async function loadFamilyData(signal?: AbortSignal): Promise<FamilyData> 
   return { invitations: payload.invitations ?? [], members: payload.members ?? [] }
 }
 
+export async function loadSharedFamilyData(signal?: AbortSignal): Promise<SharedFamilyBundle[]> {
+  const response = await fetch('/api/family/shared-data', { credentials: 'same-origin', signal })
+  const payload = await response.json().catch(() => ({})) as { bundles?: SharedFamilyBundle[]; error?: string }
+  if (!response.ok) throw new ApiError(payload.error ?? '공유받은 가족 기록을 불러오지 못했습니다.', response.status)
+  return payload.bundles ?? []
+}
+
 export async function createFamilyInvitationApi(name: string, relationship: string): Promise<FamilyInvitation> {
   const response = await fetch('/api/family/invitations', {
     method: 'POST',
@@ -216,11 +223,11 @@ function combineTimeoutSignal(timeoutMs: number, signal?: AbortSignal): AbortSig
   return typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, timeout]) : signal
 }
 
-export async function generateVisitSummary(text: string, role: 'self' | 'family', signal?: AbortSignal): Promise<PrepareVisitResponse> {
+export async function generateVisitSummary(text: string, role: 'self' | 'family', context?: string | null, signal?: AbortSignal): Promise<PrepareVisitResponse> {
   const response = await fetchWithTimeout('/api/ai/prepare', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, role }),
+    body: JSON.stringify({ text, role, context: context || undefined }),
   }, 60_000, signal)
 
   const payload = await response.json() as Partial<PrepareVisitResponse> & { error?: string }
@@ -232,7 +239,7 @@ export async function generateVisitSummary(text: string, role: 'self' | 'family'
 }
 
 export async function transcribeVisitAudio(audio: Blob, signal?: AbortSignal): Promise<TranscriptionResponse> {
-  if (audio.size === 0) throw new ApiError('전사할 녹음 내용이 없습니다.', 400)
+  if (audio.size === 0) throw new ApiError('글로 바꿀 녹음 내용이 없습니다.', 400)
   if (audio.size > maxAudioBytes) throw new ApiError('녹음 파일이 너무 큽니다. 더 짧게 나누어 녹음해 주세요.', 413)
 
   const response = await fetchWithTimeout('/api/audio/transcribe', {
@@ -243,7 +250,7 @@ export async function transcribeVisitAudio(audio: Blob, signal?: AbortSignal): P
   const payload = await response.json().catch(() => ({})) as Partial<TranscriptionResponse> & { error?: string }
   if (!response.ok) throw new ApiError(payload.error ?? '음성을 글로 바꾸지 못했습니다.', response.status)
   if (!payload.transcript?.trim() || !payload.model) {
-    throw new ApiError('전사 결과가 올바른 형식이 아닙니다.', 502)
+    throw new ApiError('글로 바꾼 결과가 올바른 형식이 아닙니다.', 502)
   }
   return { transcript: payload.transcript.trim(), model: payload.model }
 }
@@ -269,6 +276,10 @@ function isVisitSummary(value: VisitSummary) {
     && Array.isArray(value.questions)
     && value.questions.length === 3
     && value.questions.every((question) => typeof question === 'string')
+    && (value.sources === undefined || (Array.isArray(value.sources) && value.sources.every((source) => typeof source.id === 'string'
+      && typeof source.title === 'string'
+      && typeof source.organization === 'string'
+      && typeof source.url === 'string')))
 }
 
 async function submitCredentials(endpoint: string, email: string, password: string): Promise<AuthResponse> {

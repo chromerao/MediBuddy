@@ -65,6 +65,15 @@ export interface VisitSummary {
   course: string
   measurement: string
   questions: string[]
+  sources?: MedicalSourceCitation[]
+}
+
+export interface MedicalSourceCitation {
+  id: string
+  title: string
+  organization: string
+  url: string
+  updatedAt: string
 }
 
 export interface QuizAnswer {
@@ -113,6 +122,13 @@ export type AppointmentType = 'outpatient' | 'surgery' | 'examination' | 'proced
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled'
 
+export interface AppointmentPreparation {
+  symptomInput: string
+  summary: VisitSummary
+  status: 'draft' | 'ready'
+  updatedAt: string
+}
+
 export interface MedicalAppointment {
   id: string
   date: string
@@ -124,9 +140,10 @@ export interface MedicalAppointment {
   memo: string
   status: AppointmentStatus
   createdAt: string
+  preparation?: AppointmentPreparation
 }
 
-export type AppointmentInput = Omit<MedicalAppointment, 'id' | 'status' | 'createdAt'>
+export type AppointmentInput = Omit<MedicalAppointment, 'id' | 'status' | 'createdAt' | 'preparation'>
 
 export interface VisitRecord {
   id: string
@@ -183,11 +200,36 @@ export interface FamilyMember {
   connectedAt: string
 }
 
+export interface SharedPreparation {
+  appointmentId: string
+  date: string
+  time: string
+  hospital: string
+  department: string
+  type: AppointmentType
+  summary: VisitSummary
+  updatedAt: string
+}
+
+export interface SharedFamilyBundle {
+  ownerId: string
+  ownerName: string
+  relationship: string
+  duration: SharePreferences['duration']
+  preparations: SharedPreparation[]
+  visitRecords: VisitRecord[]
+  tasks: Task[]
+  healthLogs: HealthLog[]
+  medications: Medication[]
+  medicationIntakes: MedicationIntake[]
+}
+
 export interface AppState {
   hasOnboarded: boolean
   role: 'self' | 'family'
   activeVisitRole: 'self' | 'family'
   activeAppointmentId: string | null
+  activePreparationAppointmentId: string | null
   profile: UserProfile
   step: AppStep
   tab: Tab

@@ -31,7 +31,7 @@ interface VisitFlowProps {
 
 type ProcessingState = 'idle' | 'transcribing' | 'generating' | 'ready' | 'error' | 'review-error'
 
-export function VisitFlow({ step, summary, consented, answers, transcript, transcriptionModel, review, reviewModel, reviewSource, upcomingAppointments, selectedAppointmentId, onSelectAppointment, onConsentChange, onStepChange, onAnswer, onTranscriptionComplete, onReviewComplete, onSaveResults, onBack }: VisitFlowProps) {
+export function VisitFlow({ step, summary, consented, answers, transcript, transcriptionModel, review, reviewModel, upcomingAppointments, selectedAppointmentId, onSelectAppointment, onConsentChange, onStepChange, onAnswer, onTranscriptionComplete, onReviewComplete, onSaveResults, onBack }: VisitFlowProps) {
   const recorder = useVisitRecorder()
   const [quizIndex, setQuizIndex] = useState(answers.length)
   const [processingState, setProcessingState] = useState<ProcessingState>('idle')
@@ -118,8 +118,8 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
         </section>
         <div className="privacy-list">
           <div><span><Mic /></span><p><strong>기억 확인에만 사용</strong><small>진료 내용을 글로 바꾸고 질문을 만드는 데 사용해요.</small></p></div>
-          <div><span><LockKeyhole /></span><p><strong>전사에 필요한 만큼만 전송</strong><small>원본 녹음은 글로 바꾸기 위해 서버와 OpenAI API로 전송해요.</small></p></div>
-          <div><span><Trash2 /></span><p><strong>앱에 원본을 저장하지 않음</strong><small>전사가 끝나면 앱에는 녹음 파일 대신 전사된 글만 남겨요.</small></p></div>
+          <div><span><LockKeyhole /></span><p><strong>글로 바꿀 때만 전송</strong><small>원본 녹음은 글로 바꾸기 위해 서버와 OpenAI API로 전송해요.</small></p></div>
+          <div><span><Trash2 /></span><p><strong>앱에 원본을 저장하지 않음</strong><small>글로 바꾸고 나면 앱에는 녹음 파일 대신 바뀐 글만 남겨요.</small></p></div>
         </div>
         {upcomingAppointments.length > 0 && (
           <section className="appointment-link-picker">
@@ -193,17 +193,17 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
     return (
       <div className="processing-page" aria-live="polite">
         <span className="processing-orbit"><Sparkles /></span>
-        <h1>{isTranscribing ? <>진료 음성을<br />글로 바꾸고 있어요.</> : isGenerating ? <>기억 확인 질문을<br />만들고 있어요.</> : processingState === 'ready' ? <>전사 내용을<br />확인해 주세요.</> : isReviewError ? <>기억 확인 질문을<br />만들지 못했어요.</> : <>전사를<br />완료하지 못했어요.</>}</h1>
-        <p>{isTranscribing ? '녹음 길이에 따라 잠시 시간이 걸릴 수 있어요.' : isGenerating ? '전사에서 명확히 확인되는 내용만 질문으로 정리하고 있어요.' : processingState === 'ready' ? '잘못 들린 부분이 있을 수 있으니 중요한 내용은 의료진에게 다시 확인해 주세요.' : isReviewError ? `${processingError} 아래 전사문을 확인한 뒤 다시 시도하거나, 전사문만 저장할 수 있어요.` : processingError}</p>
+        <h1>{isTranscribing ? <>진료 음성을<br />글로 바꾸고 있어요.</> : isGenerating ? <>기억 확인 질문을<br />만들고 있어요.</> : processingState === 'ready' ? <>바뀐 글을<br />확인해 주세요.</> : isReviewError ? <>기억 확인 질문을<br />만들지 못했어요.</> : <>음성을 글로<br />바꾸지 못했어요.</>}</h1>
+        <p>{isTranscribing ? '녹음 길이에 따라 잠시 시간이 걸릴 수 있어요.' : isGenerating ? '진료 대화에서 명확히 확인되는 내용만 질문으로 정리하고 있어요.' : processingState === 'ready' ? '잘못 들린 부분이 있을 수 있으니 중요한 내용은 의료진에게 다시 확인해 주세요.' : isReviewError ? `${processingError} 아래 글을 확인한 뒤 다시 시도하거나, 글로 바꾼 내용만 저장할 수 있어요.` : processingError}</p>
         <div className="processing-steps">
           <span className={isGenerating || processingState === 'ready' || isReviewError ? 'is-done' : isTranscribing ? 'is-current' : ''}>{isTranscribing ? <span className="spinner" /> : <Check />} 음성을 글로 바꾸기</span>
           <span className={processingState === 'ready' ? 'is-done' : isGenerating ? 'is-current' : ''}>{isGenerating ? <span className="spinner" /> : processingState === 'ready' ? <Check /> : null} 기억 확인 질문 만들기</span>
-          <span className={processingState === 'ready' || isReviewError ? 'is-current' : ''}>전사 내용 확인하기</span>
+          <span className={processingState === 'ready' || isReviewError ? 'is-current' : ''}>바뀐 글 확인하기</span>
         </div>
         {processingState === 'ready' && <SourceBadge>{`AI 질문 · ${reviewModel ?? '연결됨'}`}</SourceBadge>}
         {(processingState === 'ready' || isReviewError) && transcript && (
           <section className="processing-transcript">
-            <div><h2>전사된 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
+            <div><h2>글로 바꾼 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
             <p>{transcript}</p>
           </section>
         )}
@@ -211,11 +211,11 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
         {isReviewError && (
           <div className="processing-actions">
             <button className="button button--primary button--large" type="button" onClick={() => runReviewGeneration(transcript)}>질문 만들기 다시 시도</button>
-            <button className="button button--secondary" type="button" onClick={() => onStepChange('results')}>전사문만 저장하기</button>
+            <button className="button button--secondary" type="button" onClick={() => onStepChange('results')}>글로 바꾼 내용만 저장하기</button>
             <button className="skip-link" type="button" onClick={recordAgain}>다시 녹음하기</button>
           </div>
         )}
-        {processingState === 'error' && <div className="processing-actions">{audioRef.current && <button className="button button--primary button--large" type="button" onClick={retryTranscription}>전사 다시 시도하기</button>}<button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
+        {processingState === 'error' && <div className="processing-actions">{audioRef.current && <button className="button button--primary button--large" type="button" onClick={retryTranscription}>글로 바꾸기 다시 시도</button>}<button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
       </div>
     )
   }
@@ -228,7 +228,7 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
       <div className="flow-page quiz-page">
         <div className="quiz-progress"><span>{quizIndex + 1} / {quizQuestions.length}</span><div><i style={{ width: `${((quizIndex + 1) / quizQuestions.length) * 100}%` }} /></div></div>
         <section className="flow-intro">
-          <SourceBadge>전사 기반 AI 질문</SourceBadge>
+          <SourceBadge>진료 대화로 만든 AI 질문</SourceBadge>
           <p className="eyebrow">기억 확인</p>
           <h1>{question.question}</h1>
           <p>시험이 아니에요. 기억나는 대로 골라 주세요.</p>
@@ -252,20 +252,20 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
       <div className="flow-page results-page">
         <section className="flow-intro">
           <p className="eyebrow">진료 기록</p>
-          <h1>전사된 진료 내용을<br />그대로 저장할 수 있어요.</h1>
-          <p>기억 확인 질문은 만들지 못했어요. 진료에서 들은 내용은 아래 전사문과 의료진의 안내를 기준으로 확인해 주세요.</p>
+          <h1>글로 바꾼 진료 내용을<br />그대로 저장할 수 있어요.</h1>
+          <p>기억 확인 질문은 만들지 못했어요. 진료에서 들은 내용은 아래 글과 의료진의 안내를 기준으로 확인해 주세요.</p>
         </section>
         {transcript ? (
           <section className="processing-transcript">
-            <div><FileText /><h2>전사된 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
+            <div><FileText /><h2>글로 바꾼 진료 내용</h2>{transcriptionModel && <small>{transcriptionModel}</small>}</div>
             <p>{transcript}</p>
           </section>
         ) : (
-          <p className="inline-error" role="alert">저장할 전사 내용이 없습니다. 다시 녹음해 주세요.</p>
+          <p className="inline-error" role="alert">저장할 글이 없습니다. 다시 녹음해 주세요.</p>
         )}
-        <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>전사된 글만 의료수첩에 저장할 수 있어요.</span></p></div>
+        <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>글로 바꾼 내용만 의료수첩에 저장할 수 있어요.</span></p></div>
         <div className="sticky-actions">
-          {transcript && <button className="button button--primary button--large" type="button" onClick={onSaveResults}>전사문 의료수첩에 저장하기</button>}
+          {transcript && <button className="button button--primary button--large" type="button" onClick={onSaveResults}>글로 바꾼 내용 의료수첩에 저장하기</button>}
           <button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button>
         </div>
       </div>
@@ -295,9 +295,9 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
       </div>
       <div className="result-section result-section--actions">
         <div className="result-section__title"><ListChecks /><h2>진료에서 정한 실천 항목</h2></div>
-        {review.actions.length > 0 ? review.actions.map((item) => <p key={item}>{item}</p>) : <p>전사에서 명확히 확인된 실천 항목이 없어요.</p>}
+        {review.actions.length > 0 ? review.actions.map((item) => <p key={item}>{item}</p>) : <p>진료 대화에서 명확히 확인된 실천 항목이 없어요.</p>}
       </div>
-      <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>전사된 글과 정리된 진료 기록만 의료수첩에 저장할 수 있어요.</span></p></div>
+      <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>글로 바꾼 내용과 정리된 진료 기록만 의료수첩에 저장할 수 있어요.</span></p></div>
       <div className="sticky-actions"><button className="button button--primary button--large" type="button" onClick={onSaveResults}>의료수첩에 저장하기</button></div>
     </div>
   )

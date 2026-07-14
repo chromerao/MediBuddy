@@ -1,5 +1,6 @@
-import { Check, ChevronRight, Clock3, Link2, Send, ShieldCheck, UserRound, Users, X } from 'lucide-react'
-import type { AppState, FamilyInvitation, FamilyMember, SharePreferences, UserProfile, VisitRecord } from '../types'
+import { BookHeart, Check, ChevronRight, Clock3, Link2, Pill, RefreshCw, Send, ShieldCheck, UserRound, Users, X } from 'lucide-react'
+import { PatientSummaryCard } from '../components/PatientSummaryCard'
+import type { AppState, FamilyInvitation, FamilyMember, SharedFamilyBundle, SharePreferences, UserProfile, VisitRecord } from '../types'
 
 interface FamilyProps {
   role: AppState['role']
@@ -12,11 +13,13 @@ interface FamilyProps {
   members: FamilyMember[]
   pendingInvitations: FamilyInvitation[]
   sharedRecords: VisitRecord[]
+  sharedFamilyData: SharedFamilyBundle[]
+  onRefreshShared: () => void
   onCancelInvitation: (id: string) => void
   onOpenSharedVisit: (id: string) => void
 }
 
-export function Family({ role, profile, preferences, onToggleSharing, onPrepareForFamily, onOpenShareSettings, onInviteFamily, members, pendingInvitations, sharedRecords, onCancelInvitation, onOpenSharedVisit }: FamilyProps) {
+export function Family({ role, profile, preferences, onToggleSharing, onPrepareForFamily, onOpenShareSettings, onInviteFamily, members, pendingInvitations, sharedRecords, sharedFamilyData, onRefreshShared, onCancelInvitation, onOpenSharedVisit }: FamilyProps) {
   const targetName = role === 'family' ? profile.patientName : '가족'
 
   return (
@@ -42,11 +45,52 @@ export function Family({ role, profile, preferences, onToggleSharing, onPrepareF
         <div className="section-heading"><h2>수락 대기 중인 초대</h2><span>{pendingInvitations.length}명</span></div>
         <div className="pending-invite-list">{pendingInvitations.map((invitation) => <div key={invitation.id}><span className="round-icon"><Clock3 /></span><p><strong>{invitation.name}</strong><small>{invitation.relationship} · 코드 {invitation.code}</small></p><button className="icon-button" type="button" onClick={() => onCancelInvitation(invitation.id)} aria-label={`${invitation.name} 초대 취소`}><X /></button></div>)}</div>
       </section>}
+      <section className="section-stack shared-family-section">
+        <div className="section-heading">
+          <div><h2>가족에게 공유받은 기록</h2><span>{sharedFamilyData.length > 0 ? `${sharedFamilyData.length}명` : '공유 대기 중'}</span></div>
+          <button className="heading-action" type="button" onClick={onRefreshShared}><RefreshCw aria-hidden="true" /> 새로고침</button>
+        </div>
+        {sharedFamilyData.length === 0 ? (
+          <div className="family-empty"><BookHeart aria-hidden="true" /><p><strong>아직 공유받은 기록이 없어요.</strong><small>연결된 가족이 기록 공유를 켜면 이곳에서 확인할 수 있어요.</small></p></div>
+        ) : sharedFamilyData.map((bundle) => (
+          <article className="shared-family-bundle" key={bundle.ownerId}>
+            <header><span className="family-person-card__avatar"><UserRound aria-hidden="true" /></span><div><p className="eyebrow">공유한 가족</p><h3>{bundle.ownerName} 님</h3><small>{durationLabel(bundle.duration)}</small></div></header>
+            {bundle.preparations.map((preparation) => (
+              <div className="shared-preparation" key={preparation.appointmentId}>
+                <p className="shared-record-meta">{preparation.date} · {preparation.hospital} {preparation.department}</p>
+                <PatientSummaryCard summary={preparation.summary} patientName={bundle.ownerName} />
+              </div>
+            ))}
+            {bundle.visitRecords.map((record) => (
+              <section className="remote-visit-card" key={record.id}>
+                <p className="eyebrow">{record.date} · {record.hospital} {record.department}</p>
+                <h4>{record.summary.symptom}</h4>
+                {record.remembered.length > 0 && <p><strong>기억한 내용</strong>{record.remembered.join(' · ')}</p>}
+                {record.unanswered.length > 0 && <p><strong>다시 확인할 내용</strong>{record.unanswered.join(' · ')}</p>}
+                {record.actions.length > 0 && <p><strong>실천 항목</strong>{record.actions.join(' · ')}</p>}
+              </section>
+            ))}
+            {(bundle.tasks.length > 0 || bundle.medications.length > 0 || bundle.healthLogs.length > 0) && (
+              <div className="shared-daily-summary">
+                {bundle.tasks.length > 0 && <p><Check aria-hidden="true" /><span><strong>실천 현황</strong>{bundle.tasks.filter((task) => task.completed).length}/{bundle.tasks.length} 완료</span></p>}
+                {bundle.medications.length > 0 && <p><Pill aria-hidden="true" /><span><strong>등록한 복약</strong>{bundle.medications.map((medication) => medication.name).join(' · ')}</span></p>}
+                {bundle.healthLogs.length > 0 && <p><BookHeart aria-hidden="true" /><span><strong>최근 건강 기록</strong>{bundle.healthLogs.slice(0, 3).map((log) => log.text).join(' · ')}</span></p>}
+              </div>
+            )}
+          </article>
+        ))}
+      </section>
       {preferences.enabled && preferences.results && sharedRecords.length > 0 && <section className="section-stack">
-        <div className="section-heading"><h2>가족과 공유된 진료 기록</h2><span>{sharedRecords.length}건</span></div>
+        <div className="section-heading"><h2>내가 가족에게 공유 중인 기록</h2><span>{sharedRecords.length}건</span></div>
         <div className="shared-record-list">{sharedRecords.slice(0, 3).map((record) => <button key={record.id} type="button" onClick={() => onOpenSharedVisit(record.id)}><span className="visit-record__date"><strong>{record.day}</strong><small>{record.month}</small></span><p><strong>{record.hospital} {record.department}</strong><small>{record.disease}</small></p><ChevronRight /></button>)}</div>
       </section>}
       <button className="button button--secondary button--large" type="button" onClick={onInviteFamily}><UserRound /> 다른 가족 초대하기</button>
     </div>
   )
+}
+
+function durationLabel(duration: SharedFamilyBundle['duration']) {
+  if (duration === 'once') return '최근 진료 1건 공유'
+  if (duration === '30days') return '최근 30일 기록 공유'
+  return '연결을 해제할 때까지 공유'
 }

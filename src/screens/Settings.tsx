@@ -1,7 +1,7 @@
 import { Bell, Check, ChevronRight, Cloud, Download, FileText, ShieldCheck, Type, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
-import { getNotificationPermission, requestNotificationPermission } from '../notifications'
+import { disableBackgroundNotifications, enableBackgroundNotifications, getNotificationPermission, requestNotificationPermission } from '../notifications'
 import type { AppState, AuthStatus, AuthUser, SyncStatus, UserProfile, UserSettings } from '../types'
 
 interface SettingsProps {
@@ -26,13 +26,26 @@ const fontOptions = [
 
 export function Settings({ settings, user, authStatus, syncStatus, role, profile, onChange, onOpenAccount, onOpenProfile, onExportData, onBack }: SettingsProps) {
   const [notificationPermission, setNotificationPermission] = useState(getNotificationPermission)
+  const [backgroundNotice, setBackgroundNotice] = useState('')
 
   async function toggleReminder(key: 'appointmentReminders' | 'preparationReminders' | 'medicationReminders', enabled: boolean) {
     if (enabled) {
       const permission = await requestNotificationPermission()
       setNotificationPermission(permission)
+      if (permission === 'granted') {
+        try {
+          setBackgroundNotice(await enableBackgroundNotifications())
+        } catch (error) {
+          setBackgroundNotice(error instanceof Error ? error.message : '백그라운드 알림을 등록하지 못했어요.')
+        }
+      }
     }
-    onChange({ ...settings, [key]: enabled })
+    const nextSettings = { ...settings, [key]: enabled }
+    onChange(nextSettings)
+    if (!nextSettings.appointmentReminders && !nextSettings.preparationReminders && !nextSettings.medicationReminders) {
+      await disableBackgroundNotifications()
+      setBackgroundNotice('백그라운드 알림을 해제했어요.')
+    }
   }
 
   const reminderEnabled = settings.appointmentReminders || settings.preparationReminders || settings.medicationReminders
@@ -90,6 +103,7 @@ export function Settings({ settings, user, authStatus, syncStatus, role, profile
         <label className="toggle-row"><span><strong>진료 준비 알림</strong><small>기록이 없으면 질문 준비를 안내해요.</small></span><input type="checkbox" checked={settings.preparationReminders} onChange={(event) => toggleReminder('preparationReminders', event.target.checked)} /></label>
         <label className="toggle-row"><span><strong>복약 알림</strong><small>복용 시간이 지나면 약 챙기기를 알려드려요.</small></span><input type="checkbox" checked={settings.medicationReminders} onChange={(event) => toggleReminder('medicationReminders', event.target.checked)} /></label>
         {notificationHint && <p className="inline-notice" role="status">{notificationHint}</p>}
+        {backgroundNotice && <p className="inline-notice" role="status">{backgroundNotice}</p>}
       </section>
 
       <section className="settings-card">
@@ -98,7 +112,7 @@ export function Settings({ settings, user, authStatus, syncStatus, role, profile
       </section>
 
       <section className="settings-card settings-info">
-        <div><ShieldCheck /><p><strong>개인정보 처리 안내</strong><small>녹음 원본은 저장하지 않으며, 전사문과 진료 기록은 기록 상세 화면에서 직접 삭제할 수 있습니다.</small></p></div>
+        <div><ShieldCheck /><p><strong>개인정보 처리 안내</strong><small>녹음 원본은 저장하지 않으며, 글로 바꾼 내용과 진료 기록은 기록 상세 화면에서 직접 삭제할 수 있습니다.</small></p></div>
         <div><FileText /><p><strong>서비스 정보</strong><small>메디버디 데모 0.1.0 · 진단·처방을 제공하지 않습니다.</small></p></div>
       </section>
     </div>

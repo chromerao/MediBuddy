@@ -1,0 +1,58 @@
+// 질병관리청 국가건강정보포털의 공개 문서를 검색하기 위한 짧은 색인이다.
+// 원문을 복제하지 않고 검색용 요약과 원문 링크만 보관한다.
+export const medicalSources = [
+  {
+    id: 'kdca-diabetes-5305',
+    title: '당뇨병',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5305',
+    updatedAt: '2026-04-29',
+    keywords: ['당뇨', '혈당', '공복혈당', '당화혈색소', '다뇨', '갈증', '체중감소', '발저림', '신경병증'],
+    summary: '당뇨병의 개요, 증상, 검사, 정기 진찰, 합병증과 생활습관 관리 정보를 제공한다.',
+  },
+  {
+    id: 'kdca-hypertension-6765',
+    title: '고혈압',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6765',
+    updatedAt: '2025-01-01',
+    keywords: ['고혈압', '혈압', '수축기', '이완기', '두통', '어지럼', '심혈관', '저염', '싱겁게'],
+    summary: '고혈압의 특징, 혈압 확인, 정기 진료와 생활습관 관리 정보를 제공한다.',
+  },
+  {
+    id: 'kdca-hypoglycemia-2350',
+    title: '당뇨병 합병증(급성 합병증_저혈당)',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=2350',
+    updatedAt: '2026-04-28',
+    keywords: ['저혈당', '식은땀', '떨림', '당뇨약', '인슐린', '의식', '어지럼'],
+    summary: '저혈당의 증상, 위험요인, 예방과 발생 시 대처 정보를 제공한다.',
+  },
+  {
+    id: 'kdca-prescription-3607',
+    title: '처방전과 약설명서 읽는 방법',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=3607',
+    updatedAt: '2026-06-23',
+    keywords: ['처방전', '약', '복약', '복용', '용량', '투약', '약설명서', '부작용', '약사'],
+    summary: '처방전의 복용량·횟수·기간과 약 설명서의 주의사항을 확인하는 방법을 안내한다.',
+  },
+  {
+    id: 'kdca-exercise-5293',
+    title: '운동',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5293',
+    updatedAt: '2026-05-15',
+    keywords: ['운동', '걷기', '산책', '신체활동', '근력', '유산소', '체중', '비만'],
+    summary: '운동의 종류와 건강 효과, 개인 상태에 따른 신체활동 조절 정보를 제공한다.',
+  },
+  {
+    id: 'kdca-falls-1743',
+    title: '낙상',
+    organization: '질병관리청 국가건강정보포털',
+    url: 'https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=1743',
+    updatedAt: '2026-01-01',
+    keywords: ['낙상', '넘어짐', '골절', '균형', '보행', '미끄러짐', '노인', '고령'],
+    summary: '고령자 낙상의 영향, 위험요인과 예방 정보를 제공한다.',
+  },
+]

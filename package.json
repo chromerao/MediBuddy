@@ -9,8 +9,10 @@
     "dev:api": "node --watch server/index.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview --host 0.0.0.0",
-    "start": "node server/index.mjs"
+    "start": "node server/index.mjs",
+    "vapid:generate": "web-push generate-vapid-keys"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -18,9 +20,10 @@
     "express": "latest",
     "lucide-react": "latest",
     "openai": "latest",
-    "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "vite": "latest",
+    "web-push": "^3.6.7",
     "zod": "latest"
   },
   "devDependencies": {
@@ -32,6 +35,7 @@
     "eslint-plugin-react-refresh": "latest",
     "globals": "latest",
     "typescript": "latest",
-    "typescript-eslint": "latest"
+    "typescript-eslint": "latest",
+    "vitest": "latest"
   }
 }

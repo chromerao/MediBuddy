@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, FileText, MapPin, Pencil, Plus, Stethoscope, Trash2, UserRound } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ClipboardPen, Clock3, FileText, MapPin, Pencil, Plus, Stethoscope, Trash2, UserRound } from 'lucide-react'
 import { appointmentTypeLabels, formatAppointmentDate, parseDateKey, sortAppointments, todayDateKey, toDateKey } from '../appointments'
 import { AppointmentForm } from '../components/AppointmentForm'
 import { PageHeader } from '../components/PageHeader'
@@ -9,12 +9,13 @@ interface CalendarProps {
   appointments: MedicalAppointment[]
   onSave: (input: AppointmentInput, appointmentId?: string) => void
   onDelete: (appointmentId: string) => void
+  onPrepare: (appointmentId: string) => void
   onBack: () => void
 }
 
 const weekdays = ['일', '월', '화', '수', '목', '금', '토']
 
-export function Calendar({ appointments, onSave, onDelete, onBack }: CalendarProps) {
+export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: CalendarProps) {
   const initialDate = sortAppointments(appointments).find((appointment) => appointment.date >= todayDateKey())?.date ?? todayDateKey()
   const [selectedDate, setSelectedDate] = useState(initialDate)
   const [visibleMonth, setVisibleMonth] = useState(() => {
@@ -132,7 +133,11 @@ export function Calendar({ appointments, onSave, onDelete, onBack }: CalendarPro
                 <p><Stethoscope aria-hidden="true" /> {appointment.department}</p>
                 {appointment.doctor && <p><UserRound aria-hidden="true" /> {appointment.doctor}</p>}
                 {appointment.memo && <p className="appointment-card__memo"><FileText aria-hidden="true" /> {appointment.memo}</p>}
+                <p className={appointment.preparation?.status === 'ready' ? 'preparation-status is-ready' : 'preparation-status'}>
+                  {appointment.preparation?.status === 'ready' ? <><CheckCircle2 aria-hidden="true" /> 질문 카드 준비됨</> : appointment.preparation ? '작성 중인 질문 카드가 있어요' : '질문 카드 준비 전'}
+                </p>
                 <div className="appointment-card__actions">
+                  {appointment.status === 'scheduled' && <button type="button" onClick={() => onPrepare(appointment.id)}><ClipboardPen aria-hidden="true" /> {appointment.preparation?.status === 'ready' ? '카드 보기' : '진료 준비'}</button>}
                   <button type="button" onClick={() => { setEditingAppointment(appointment); setFormOpen(true) }}><Pencil aria-hidden="true" /> 수정</button>
                   <button type="button" className="is-danger" onClick={() => deleteAppointment(appointment)}><Trash2 aria-hidden="true" /> 삭제</button>
                 </div>

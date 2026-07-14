@@ -8,22 +8,12 @@ export const emptySummary: VisitSummary = {
   questions: [],
 }
 
-export const defaultSummary: VisitSummary = {
-  symptom: '새벽에 발이 저린 증상이 있어요.',
-  course: '최근 일주일 동안 새벽에 반복되고 있어요.',
-  measurement: '오늘 아침 공복 혈당 130 mg/dL',
-  questions: [
-    '새벽에 발이 저린 증상이 당뇨와 관련이 있나요?',
-    '현재 복용 중인 약은 그대로 먹어도 되나요?',
-    '집에서 어떤 증상을 더 살펴봐야 하나요?',
-  ],
-}
-
 export const initialState: AppState = {
   hasOnboarded: false,
   role: 'self',
   activeVisitRole: 'self',
   activeAppointmentId: null,
+  activePreparationAppointmentId: null,
   profile: emptyProfile,
   step: 'home',
   tab: 'home',
@@ -85,19 +75,18 @@ export function evaluateVisitReview(review: VisitReview, answers: QuizAnswer[]):
 }
 
 export function createSummary(input: string): VisitSummary {
-  const hasSugar = /혈당|공복|\d{2,3}/.test(input)
-  const hasFoot = /발|저리|저림/.test(input)
+  const originalInput = input.trim()
 
   return {
-    symptom: hasFoot ? '새벽에 발이 저린 증상이 있어요.' : input.trim(),
-    course: /새벽/.test(input) ? '최근 새벽 시간에 반복되고 있어요.' : '최근 느낀 변화를 진료에서 확인하고 싶어요.',
-    measurement: hasSugar ? `직접 기록한 수치: ${input.match(/\d{2,3}/)?.[0] ?? '확인 필요'} mg/dL` : '직접 기록한 측정 수치가 없어요.',
-    questions: hasFoot
-      ? defaultSummary.questions
-      : [
-          '이 증상의 원인을 확인하려면 무엇을 살펴봐야 하나요?',
-          '현재 복용 중인 약은 그대로 먹어도 되나요?',
-          '집에서 어떤 변화를 기록하면 좋을까요?',
-        ],
+    // AI를 사용할 수 없을 때에는 숫자·질환·복약 정보를 추론하지 않고
+    // 사용자가 입력한 문장만 그대로 보존한다.
+    symptom: originalInput,
+    course: '입력 내용을 그대로 의료진에게 보여드려 시작 시기와 변화를 확인해 주세요.',
+    measurement: '측정 수치는 자동으로 해석하지 않았어요.',
+    questions: [
+      '말씀드린 내용을 확인하려면 어떤 점을 살펴보면 될까요?',
+      '집에서 어떤 변화를 기록해 두면 좋을까요?',
+      '어떤 변화가 생기면 다시 진료받아야 하나요?',
+    ],
   }
 }

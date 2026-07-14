@@ -7,6 +7,9 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
 import { randomUUID } from 'node:crypto'
+import webPush from 'web-push'
+import { retrieveMedicalSources, sourceCitations } from './rag.mjs'
+import { createAutomaticPreparationDraft } from './autoPreparation.mjs'
 import {
   AccountError,
   StateConflictError,
@@ -20,18 +23,27 @@ import {
   databasePath,
   deleteAccount,
   deleteSession,
+  deletePushEndpoint,
+  deletePushSubscription,
   findInvitationByCode,
   getAuthenticatedUser,
   listFamilyMembers,
+  listSharedFamilyData,
+  listPushSubscriptions,
+  listReminderUserIds,
   listInvitations,
   listUserAppointments,
   listUserVisitRecords,
   loadUserState,
   replaceUserAppointments,
   replaceUserVisitRecords,
+  savePushSubscription,
   saveUserState,
   sessionCookie,
   verifyAccount,
+  hasReminderDelivery,
+  markReminderDelivered,
+  upsertUserAppointment,
 } from './database.mjs'
 
 const app = express()
@@ -39,6 +51,11 @@ const port = Number(process.env.API_PORT ?? 8787)
 const model = process.env.OPENAI_MODEL?.trim() || 'gpt-5-mini'
 const transcriptionModel = process.env.OPENAI_TRANSCRIBE_MODEL?.trim() || 'gpt-4o-mini-transcribe'
 const hasApiKey = Boolean(process.env.OPENAI_API_KEY?.trim())
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY?.trim() || ''
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY?.trim() || ''
+const vapidSubject = process.env.VAPID_SUBJECT?.trim() || ''
+const pushConfigured = Boolean(vapidPublicKey && vapidPrivateKey && vapidSubject)
+if (pushConfigured) webPush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey)
 const openai = hasApiKey ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null
 const maxAudioBytes = 24 * 1024 * 1024
 const audioTypes = new Map([
@@ -56,6 +73,7 @@ const audioTypes = new Map([
 const requestSchema = z.object({
   text: z.string().trim().min(2).max(4000),
   role: z.enum(['self', 'family']).default('self'),
+  context: z.string().trim().max(3000).optional(),
 })
 
 const visitSummarySchema = z.object({
@@ -100,6 +118,12 @@ const inviteCodeSchema = z.string().trim().regex(/^[A-Z2-9]{6}$/)
 const recordItemsSchema = z.object({
   items: z.array(z.looseObject({ id: z.string().min(1).max(64) })).max(500),
 })
+const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url().max(2048),
+  expirationTime: z.number().nullable().optional(),
+  keys: z.object({ p256dh: z.string().min(1).max(512), auth: z.string().min(1).max(512) }),
+})
+const pushUnsubscribeSchema = z.object({ endpoint: z.string().url().max(2048) })
 
 const aiRateLimit = createRateLimit(20)
 const authRateLimit = createRateLimit(20)
@@ -245,6 +269,44 @@ app.put('/api/visit-records', (request, response) => {
   response.json({ ok: true })
 })
 
+app.get('/api/notifications/config', (_request, response) => {
+  response.json({ configured: pushConfigured, publicKey: pushConfigured ? vapidPublicKey : null })
+})
+
+app.post('/api/notifications/subscribe', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '백그라운드 알림을 사용하려면 로그인이 필요합니다.' })
+    return
+  }
+  if (!pushConfigured) {
+    response.status(503).json({ error: '서버의 Web Push 키가 아직 설정되지 않았습니다.' })
+    return
+  }
+  const parsed = pushSubscriptionSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: '알림 구독 정보를 확인해 주세요.' })
+    return
+  }
+  savePushSubscription(user.id, parsed.data)
+  response.status(201).json({ ok: true })
+})
+
+app.delete('/api/notifications/subscribe', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '로그인이 필요합니다.' })
+    return
+  }
+  const parsed = pushUnsubscribeSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: '알림 구독 정보를 확인해 주세요.' })
+    return
+  }
+  deletePushSubscription(user.id, parsed.data.endpoint)
+  response.status(204).end()
+})
+
 app.delete('/api/account', (request, response) => {
   const user = getAuthenticatedUser(request)
   if (!user) {
@@ -264,6 +326,15 @@ app.get('/api/family', (request, response) => {
     return
   }
   response.json({ invitations: listInvitations(user.id), members: listFamilyMembers(user.id) })
+})
+
+app.get('/api/family/shared-data', (request, response) => {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    response.status(401).json({ error: '가족 공유 기록을 보려면 로그인이 필요합니다.' })
+    return
+  }
+  response.json({ bundles: listSharedFamilyData(user.id) })
 })
 
 app.post('/api/family/invitations', (request, response) => {
@@ -382,6 +453,10 @@ app.post('/api/ai/prepare', async (request, response) => {
   }
 
   const author = parsed.data.role === 'family' ? '가족이 환자를 대신해 입력한 내용' : '환자가 직접 입력한 내용'
+  const ragSources = retrieveMedicalSources(`${parsed.data.text}\n${parsed.data.context ?? ''}`)
+  const publicEvidence = ragSources.length > 0
+    ? ragSources.map((source) => `[${source.title} | ${source.organization}] ${source.summary}`).join('\n')
+    : '검색된 공공 의료문서 근거 없음'
 
   try {
     const completion = await openai.responses.parse({
@@ -396,6 +471,10 @@ app.post('/api/ai/prepare', async (request, response) => {
             '사용자가 제공한 사실만 쉽고 짧은 한국어로 정리하세요.',
             '진단, 처방, 위험도 판정, 응급도 판단, 약 변경 지시를 절대 생성하지 마세요.',
             '측정 수치나 복약 정보는 입력에 명시된 경우에만 포함하세요.',
+            '참고 기록은 사용자가 직접 저장한 과거 정보입니다. 질문을 더 유용하게 만드는 데 활용하되 과거 증상이나 지시를 현재 증상처럼 바꾸지 마세요.',
+            '참고 기록의 측정 수치는 측정 시점을 밝혀 measurement에 포함할 수 있습니다.',
+            '공공 의료문서 근거에 없는 의학적 사실, 질환 연관성, 치료 방법은 추가하지 마세요.',
+            '공공 의료문서 근거가 없으면 입력 내용을 정리하고 의료진에게 확인할 중립적인 질문만 만드세요.',
             '정보가 없으면 추측하지 말고 해당 정보가 입력되지 않았다고 쓰세요.',
             'symptom, course, measurement는 환자가 읽기 쉬운 1인칭 표현으로 작성하고 전문용어를 피하세요.',
             '질문은 환자가 의료진에게 그대로 읽을 수 있는 중립적인 질문으로 정확히 3개 작성하세요.',
@@ -406,7 +485,12 @@ app.post('/api/ai/prepare', async (request, response) => {
         },
         {
           role: 'user',
-          content: `${author}: ${parsed.data.text}`,
+          content: JSON.stringify({
+            author,
+            currentInput: parsed.data.text,
+            referenceContext: parsed.data.context ?? '없음',
+            publicMedicalEvidence: publicEvidence,
+          }),
         },
       ],
       text: {
@@ -419,7 +503,7 @@ app.post('/api/ai/prepare', async (request, response) => {
       return
     }
 
-    response.json({ summary: completion.output_parsed, model })
+    response.json({ summary: { ...completion.output_parsed, sources: sourceCitations(ragSources) }, model })
   } catch (error) {
     const status = getErrorStatus(error)
     console.error('OpenAI request failed:', error instanceof Error ? error.message : 'Unknown error')
@@ -522,7 +606,76 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`OpenAI: ${hasApiKey ? `configured (${model})` : 'not configured'}`)
   if (hasApiKey) console.log(`Transcription: configured (${transcriptionModel})`)
   console.log(`Database: ${databasePath}`)
+  console.log(`Web Push: ${pushConfigured ? 'configured' : 'not configured'}`)
 })
+
+const reminderInterval = Math.max(60_000, Number(process.env.REMINDER_INTERVAL_MS ?? 300_000))
+setTimeout(() => runReminderScheduler().catch(logReminderError), 2_000).unref()
+setInterval(() => runReminderScheduler().catch(logReminderError), reminderInterval).unref()
+
+async function runReminderScheduler(now = new Date()) {
+  const today = localDateKey(now)
+  const tomorrow = localDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))
+  for (const userId of listReminderUserIds()) {
+    const state = loadUserState(userId).state
+    const settings = state?.settings ?? {}
+    const visits = listUserVisitRecords(userId)
+    for (let appointment of listUserAppointments(userId)) {
+      if (appointment.status !== 'scheduled' || (appointment.date !== today && appointment.date !== tomorrow)) continue
+      if (appointment.date === tomorrow && settings.preparationReminders && !appointment.preparation) {
+        const drafted = createAutomaticPreparationDraft(appointment, visits, now)
+        if (drafted) {
+          upsertUserAppointment(userId, drafted)
+          appointment = drafted
+        }
+      }
+      const messages = []
+      if (settings.appointmentReminders) {
+        messages.push(appointment.date === today
+          ? { type: 'appointment-today', title: '오늘 병원 일정이 있어요', body: appointmentLabel(appointment) }
+          : { type: 'appointment-tomorrow', title: '내일 병원 일정이 있어요', body: appointmentLabel(appointment) })
+      }
+      if (settings.preparationReminders && appointment.date === tomorrow && appointment.preparation?.status !== 'ready') {
+        messages.push({
+          type: appointment.preparation ? 'preparation-draft' : 'preparation-needed',
+          title: appointment.preparation ? '질문 카드 초안을 확인해 주세요' : '진료 질문을 준비해 볼까요?',
+          body: appointment.preparation ? `${appointment.hospital} 진료용 초안을 과거 기록으로 만들었어요.` : `${appointment.hospital} 진료 전에 궁금한 점을 정리해 보세요.`,
+        })
+      }
+      for (const message of messages) await deliverReminder(userId, appointment.id, message)
+    }
+  }
+}
+
+async function deliverReminder(userId, appointmentId, message) {
+  if (!pushConfigured || hasReminderDelivery(userId, appointmentId, message.type)) return
+  let delivered = false
+  for (const subscription of listPushSubscriptions(userId)) {
+    try {
+      await webPush.sendNotification(subscription, JSON.stringify({ ...message, url: '/' }))
+      delivered = true
+    } catch (error) {
+      if (error?.statusCode === 404 || error?.statusCode === 410) deletePushEndpoint(subscription.endpoint)
+      else console.error('Web Push delivery failed:', error instanceof Error ? error.message : 'Unknown error')
+    }
+  }
+  if (delivered) markReminderDelivered(userId, appointmentId, message.type)
+}
+
+function appointmentLabel(appointment) {
+  return `${appointment.hospital} ${appointment.department} · ${appointment.date} ${appointment.time ?? ''}`.trim()
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function logReminderError(error) {
+  console.error('Reminder scheduler failed:', error instanceof Error ? error.message : 'Unknown error')
+}
 
 // 분당 제한(메모리)과 별개로, SQLite에 남는 일일 사용량으로 재시작 후에도 비용 악용을 막는다.
 function aiDailyQuota(request, response, next) {
