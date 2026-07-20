@@ -1,12 +1,12 @@
-import { CalendarDays, CalendarPlus, Check, CheckCircle2, ChevronRight, ClipboardPen, Footprints, LoaderCircle, Mic, Pill, Plus, Settings2, Sparkles, Stethoscope, WifiOff } from 'lucide-react'
+import { CalendarDays, CalendarPlus, Check, CheckCircle2, ChevronDown, ClipboardPen, Footprints, LoaderCircle, Mic, Pill, Plus, Settings2, Stethoscope, WifiOff } from 'lucide-react'
+import { useState } from 'react'
 import { appointmentTypeLabels, formatAppointmentDate, formatDDay, sortAppointments, todayDateKey } from '../appointments'
 import { isIntakeTaken, medicationSlotLabels, medicationSlotOrder } from '../medications'
-import type { HealthLog, MedicalAppointment, Medication, MedicationIntake, MedicationSlot, Task } from '../types'
+import type { MedicalAppointment, Medication, MedicationIntake, MedicationSlot, Task } from '../types'
 
 interface HomeProps {
   userName: string
   tasks: Task[]
-  healthLogs: HealthLog[]
   appointments: MedicalAppointment[]
   medications: Medication[]
   medicationIntakes: MedicationIntake[]
@@ -15,72 +15,74 @@ interface HomeProps {
   onPrepare: (appointmentId?: string) => void
   onOpenCalendar: () => void
   onToggleTask: (id: string) => void
-  onOpenNotebook: () => void
+  onQuickHealthLog: () => void
   llm: { status: 'checking' | 'connected' | 'unavailable'; model: string | null }
 }
 
 const taskIcons = { pill: Pill, walk: Footprints, water: Plus }
 
-export function Home({ userName, tasks, healthLogs, appointments, medications, medicationIntakes, onToggleIntake, onManageMedications, onPrepare, onOpenCalendar, onToggleTask, onOpenNotebook, llm }: HomeProps) {
+export function Home({ userName, tasks, appointments, medications, medicationIntakes, onToggleIntake, onManageMedications, onPrepare, onOpenCalendar, onToggleTask, onQuickHealthLog, llm }: HomeProps) {
   const nextAppointment = sortAppointments(appointments).find((appointment) => appointment.status === 'scheduled' && appointment.date >= todayDateKey())
   const isPrepared = nextAppointment?.preparation?.status === 'ready'
   const today = todayDateKey()
   const todayDoses = medicationSlotOrder.flatMap((slot) =>
     medications.filter((medication) => medication.slots.includes(slot)).map((medication) => ({ medication, slot })))
+  const pendingDoseCount = todayDoses.filter(({ medication, slot }) => !isIntakeTaken(medicationIntakes, medication.id, slot, today)).length
+  const pendingTaskCount = tasks.filter((task) => !task.completed).length
+  const pendingCount = pendingDoseCount + pendingTaskCount
+  const [isTodayOpen, setIsTodayOpen] = useState(() => pendingCount > 0)
 
   return (
     <div className="page-stack">
-      <section className="greeting">
-        <p className="eyebrow">오늘도 메디버디와 함께</p>
-        <h1>{userName} 님,<br />안녕하세요.</h1>
-        <p>다음 진료를 차근차근 준비해 볼까요?</p>
+      <section className="greeting greeting--compact">
+        <p className="eyebrow">오늘의 메디버디</p>
+        <h1>{userName} 님, 안녕하세요.</h1>
+        <p>지금 할 일을 하나씩 안내해 드릴게요.</p>
+        <button className="heading-action greeting__quick-action" type="button" onClick={onQuickHealthLog}><Mic aria-hidden="true" /> 건강 한마디 기록</button>
       </section>
-      <div className={`ai-connection ai-connection--${llm.status}`} role="status">
-        {llm.status === 'checking' && <LoaderCircle className="spin-icon" aria-hidden="true" />}
-        {llm.status === 'connected' && <CheckCircle2 aria-hidden="true" />}
-        {llm.status === 'unavailable' && <WifiOff aria-hidden="true" />}
-        <span><strong>{llm.status === 'connected' ? 'AI 진료 준비 연결됨' : llm.status === 'checking' ? 'AI 연결 확인 중' : '기본 정리 모드'}</strong><small>{llm.status === 'connected' ? `${llm.model} 모델을 사용해요.` : llm.status === 'checking' ? '잠시만 기다려 주세요.' : 'AI 서버 없이도 진료 준비를 계속할 수 있어요.'}</small></span>
-        <Sparkles aria-hidden="true" />
-      </div>
-
-      <section className="journey-card">
+      <section className="journey-card journey-card--focus" aria-labelledby="next-action-title">
         {nextAppointment ? (
           <>
             <div className="journey-card__top">
               <div>
-                <p className="eyebrow">다음 병원 일정</p>
-                <h2>{nextAppointment.hospital} {nextAppointment.department} <span className="d-day">{formatDDay(nextAppointment.date)}</span></h2>
+                <p className="eyebrow">지금 할 일</p>
+                <h2 id="next-action-title">{isPrepared ? '진료 전에 물어볼 내용을 확인하세요.' : '다음 진료를 미리 준비하세요.'}</h2>
+                <p className="next-action-hospital">{nextAppointment.hospital} {nextAppointment.department} <span className="d-day">{formatDDay(nextAppointment.date)}</span></p>
                 <p className="icon-text"><CalendarDays size={20} /> {formatAppointmentDate(nextAppointment.date, nextAppointment.time)}</p>
-                <span className={`appointment-type appointment-type--${nextAppointment.type}`}>{appointmentTypeLabels[nextAppointment.type]}</span>
-                <span className={isPrepared ? 'preparation-status is-ready' : 'preparation-status'}>{isPrepared ? '질문 카드 준비됨' : '질문 카드 준비 전'}</span>
+                <div className="next-action-status"><span className={`appointment-type appointment-type--${nextAppointment.type}`}>{appointmentTypeLabels[nextAppointment.type]}</span><span className={isPrepared ? 'preparation-status is-ready' : 'preparation-status'}>{isPrepared ? '준비 완료' : '준비 필요'}</span></div>
               </div>
               <span className="round-icon"><Stethoscope aria-hidden="true" /></span>
             </div>
-            <div className="journey-progress" aria-label="진료 여정">
-              <span className="is-current">준비</span><i /><span>진료</span><i /><span>확인</span><i /><span>실천</span>
-            </div>
             <div className="journey-actions">
-              <button className="button button--secondary" type="button" onClick={onOpenCalendar}><CalendarDays aria-hidden="true" /> 일정 보기</button>
-              <button className="button button--primary" type="button" onClick={() => onPrepare(nextAppointment.id)}><ClipboardPen aria-hidden="true" /> {isPrepared ? '질문 카드 보기' : '진료 준비하기'}</button>
+              <button className="button button--primary button--large" type="button" onClick={() => onPrepare(nextAppointment.id)}><ClipboardPen aria-hidden="true" /> {isPrepared ? '준비한 질문 보기' : '진료 준비 시작하기'}</button>
+              <button className="button button--quiet" type="button" onClick={onOpenCalendar}><CalendarDays aria-hidden="true" /> 일정 자세히 보기</button>
             </div>
           </>
         ) : (
           <div className="journey-empty">
             <span className="round-icon round-icon--soft"><CalendarPlus aria-hidden="true" /></span>
-            <div><p className="eyebrow">다음 병원 일정</p><h2>예정된 일정이 없어요.</h2><p>진료나 수술 날짜를 등록하면 여기에서 바로 확인할 수 있어요.</p></div>
+            <div><p className="eyebrow">지금 할 일</p><h2 id="next-action-title">다음 병원 일정을 등록하세요.</h2><p>날짜를 등록하면 진료 준비 순서를 차근차근 안내해 드려요.</p></div>
             <div className="journey-actions journey-actions--empty">
-              <button className="button button--primary" type="button" onClick={onOpenCalendar}><CalendarPlus aria-hidden="true" /> 일정 등록하기</button>
-              <button className="button button--secondary" type="button" onClick={() => onPrepare()}><ClipboardPen aria-hidden="true" /> 바로 진료 준비</button>
+              <button className="button button--primary button--large" type="button" onClick={onOpenCalendar}><CalendarPlus aria-hidden="true" /> 병원 일정 등록하기</button>
+              <button className="button button--quiet" type="button" onClick={() => onPrepare()}><ClipboardPen aria-hidden="true" /> 일정 없이 진료 준비하기</button>
             </div>
           </div>
         )}
       </section>
 
-      <section className="section-stack">
-        <div className="section-heading">
-          <h2>오늘의 복약</h2>
-          <button className="heading-action" type="button" onClick={onManageMedications}><Settings2 aria-hidden="true" /> 약 관리</button>
-        </div>
+      {llm.status !== 'connected' && <div className={`ai-connection ai-connection--${llm.status}`} role="status">
+        {llm.status === 'checking' && <LoaderCircle className="spin-icon" aria-hidden="true" />}
+        {llm.status === 'unavailable' && <WifiOff aria-hidden="true" />}
+        <span><strong>{llm.status === 'checking' ? '진료 준비 기능 확인 중' : '기본 정리 기능을 사용 중이에요'}</strong><small>{llm.status === 'checking' ? '잠시만 기다려 주세요.' : '진료 준비는 그대로 계속할 수 있어요.'}</small></span>
+      </div>}
+
+      <details className="today-panel" open={isTodayOpen} onToggle={(event) => setIsTodayOpen(event.currentTarget.open)}>
+        <summary><span><strong>오늘 할 일</strong><small>{pendingCount > 0 ? `${pendingCount}개가 남았어요` : '모두 마쳤어요'}</small></span><ChevronDown aria-hidden="true" /></summary>
+        <section className="section-stack">
+          <div className="section-heading">
+            <h2>약 먹기</h2>
+            <button className="heading-action" type="button" onClick={onManageMedications}><Settings2 aria-hidden="true" /> 약 관리</button>
+          </div>
         {todayDoses.length > 0 ? (
           <div className="task-list">
             {todayDoses.map(({ medication, slot }) => {
@@ -100,10 +102,10 @@ export function Home({ userName, tasks, healthLogs, appointments, medications, m
             <p><strong>복용 중인 약을 등록해 보세요.</strong><small>매일 시간대별로 체크하고 알림을 받을 수 있어요.</small></p>
           </div>
         )}
-      </section>
+        </section>
 
-      <section className="section-stack">
-        <div className="section-heading"><h2>오늘의 건강 실천</h2><span>{tasks.length > 0 ? `${tasks.filter((task) => task.completed).length}/${tasks.length} 완료` : '진료 후 추가돼요'}</span></div>
+        <section className="section-stack">
+        <div className="section-heading"><h2>건강 실천</h2><span>{tasks.length > 0 ? `${tasks.filter((task) => task.completed).length}/${tasks.length} 완료` : '진료 후 추가돼요'}</span></div>
         {tasks.length > 0 ? <div className="task-list">
           {tasks.map((task) => {
             const Icon = taskIcons[task.icon]
@@ -116,16 +118,8 @@ export function Home({ userName, tasks, healthLogs, appointments, medications, m
             )
           })}
         </div> : <div className="task-empty"><CheckCircle2 aria-hidden="true" /><p><strong>아직 실천 항목이 없어요.</strong><small>진료 후 정한 약속을 이곳에서 하나씩 확인할 수 있어요.</small></p></div>}
-      </section>
-
-      <section className="section-stack">
-        <div className="section-heading"><h2>최근 한마디 기록</h2></div>
-        <button className="voice-log-card" type="button" onClick={onOpenNotebook}>
-          <span className="voice-log-card__icon"><Mic /></span>
-          <span><strong>“{healthLogs[0]?.text ?? '아직 기록이 없어요'}”</strong><small>{healthLogs[0]?.time ?? '한마디로 기록해 보세요'}</small></span>
-          <ChevronRight aria-hidden="true" />
-        </button>
-      </section>
+        </section>
+      </details>
     </div>
   )
 }

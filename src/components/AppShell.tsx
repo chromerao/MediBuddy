@@ -5,6 +5,7 @@ import { Brand } from './Brand'
 
 interface AppShellProps extends PropsWithChildren {
   tab: Tab
+  contentKey: string
   onTabChange: (tab: Tab) => void
   compactContent?: boolean
   onGoHome: () => void
@@ -22,7 +23,7 @@ const navigation = [
   { id: 'family' as const, label: '가족', icon: Users },
 ]
 
-export function AppShell({ tab, onTabChange, compactContent = false, onGoHome, onOpenSettings, onOpenProfile, onOpenAccount, onLogout, authStatus, fontSize, children }: AppShellProps) {
+export function AppShell({ tab, contentKey, onTabChange, compactContent = false, onGoHome, onOpenSettings, onOpenProfile, onOpenAccount, onLogout, authStatus, fontSize, children }: AppShellProps) {
   return (
     <div className={`app-shell font-size--${fontSize}`}>
       <header className="topbar">
@@ -45,7 +46,9 @@ export function AppShell({ tab, onTabChange, compactContent = false, onGoHome, o
           </button>
         </div>
       </header>
-      <main className={compactContent ? 'main main--flow' : 'main'}>{children}</main>
+      <main className={compactContent ? 'main main--flow' : 'main'}>
+        <div key={contentKey} className="page-transition">{children}</div>
+      </main>
       <nav className="bottom-nav" aria-label="주요 메뉴">
         {navigation.map(({ id, label, icon: Icon }) => (
           <button

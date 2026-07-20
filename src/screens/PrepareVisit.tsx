@@ -35,18 +35,19 @@ export function PrepareVisit({ step, value, summary, familyMode, patientName, on
         {familyMode && <div className="family-context">{patientName} 님을 위해 대신 작성 중입니다.</div>}
         <PatientSummaryCard summary={summary} patientName={patientName} familyAuthored={familyMode} generatedByAi={!aiNotice} />
         <div className="safety-note"><Check aria-hidden="true" /><p>입력하신 내용만 정리했어요. 진단이나 위험도 판단은 포함하지 않습니다.</p></div>
+        <details className="secondary-actions">
+          <summary>다른 작업</summary>
+          <div>
+            <button className="button button--quiet" type="button" onClick={onShareCard}>
+              <Share2 aria-hidden="true" /> 가족에게 공유하기
+            </button>
+            {familyMode && <button className="button button--quiet" type="button" onClick={onSaveCard}>질문만 저장하고 나가기</button>}
+          </div>
+        </details>
         <div className="sticky-actions">
           <button className="button button--primary button--large" type="button" onClick={onStartVisit}>
-            이 질문 카드로 진료 시작하기
+            진료 기록 시작하기
           </button>
-          <button className="button button--secondary button--large" type="button" onClick={onShareCard}>
-            <Share2 aria-hidden="true" /> 질문 카드 공유하기
-          </button>
-          {familyMode && (
-            <button className="button button--secondary button--large" type="button" onClick={onSaveCard}>
-              질문 카드만 저장하기
-            </button>
-          )}
         </div>
       </div>
     )
@@ -84,7 +85,7 @@ export function PrepareVisit({ step, value, summary, familyMode, patientName, on
       {appointmentLabel && <div className="appointment-context">준비 중인 일정 · {appointmentLabel}</div>}
       {familyMode && <div className="family-context">{patientName} 님을 위해 대신 작성 중입니다.</div>}
       <section className="flow-intro flow-intro--center">
-        <p className="eyebrow">편하게 말씀해 주세요</p>
+        <p className="eyebrow">진료 전 · 편하게 말씀해 주세요</p>
         <h1>요즘 불편한 점이나<br />선생님께 말씀드리고 싶은<br />내용을 알려주세요.</h1>
         <p>말씀하셔도 되고, 아래 칸에 직접 적어도 괜찮아요.</p>
       </section>

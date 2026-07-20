@@ -3,6 +3,8 @@ import path from 'node:path'
 
 const root = process.cwd()
 const viteCli = path.join(root, 'node_modules', 'vite', 'bin', 'vite.js')
+// --https: 자체 서명 인증서로 개발 서버를 열어 다른 기기에서도 보안 컨텍스트를 쓸 수 있게 한다.
+const useHttps = process.argv.includes('--https')
 const children = [
   spawn(process.execPath, ['--watch', path.join(root, 'server', 'index.mjs')], {
     cwd: root,
@@ -12,7 +14,7 @@ const children = [
   spawn(process.execPath, [viteCli, '--host', '0.0.0.0'], {
     cwd: root,
     stdio: 'inherit',
-    env: process.env,
+    env: useHttps ? { ...process.env, MEDIBUDDY_HTTPS: 'true' } : process.env,
   }),
 ]
 

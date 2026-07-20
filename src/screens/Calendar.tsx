@@ -23,7 +23,7 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
     return new Date(date.getFullYear(), date.getMonth(), 1)
   })
   const [editingAppointment, setEditingAppointment] = useState<MedicalAppointment | null>(null)
-  const [formOpen, setFormOpen] = useState(false)
+  const [view, setView] = useState<'month' | 'list' | 'form'>('month')
 
   const calendarDays = createCalendarDays(visibleMonth)
   const selectedAppointments = sortAppointments(appointments.filter((appointment) => appointment.date === selectedDate))
@@ -34,7 +34,6 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
     setSelectedDate(toDateKey(date))
     setVisibleMonth(new Date(date.getFullYear(), date.getMonth(), 1))
     setEditingAppointment(null)
-    setFormOpen(false)
   }
 
   function moveMonth(amount: number) {
@@ -44,7 +43,7 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
 
   function openNewAppointment() {
     setEditingAppointment(null)
-    setFormOpen(true)
+    setView('form')
   }
 
   function saveAppointment(input: AppointmentInput) {
@@ -53,7 +52,7 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
     const savedDate = parseDateKey(input.date)
     setVisibleMonth(new Date(savedDate.getFullYear(), savedDate.getMonth(), 1))
     setEditingAppointment(null)
-    setFormOpen(false)
+    setView('list')
   }
 
   function deleteAppointment(appointment: MedicalAppointment) {
@@ -61,20 +60,25 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
     onDelete(appointment.id)
     if (editingAppointment?.id === appointment.id) {
       setEditingAppointment(null)
-      setFormOpen(false)
+      setView('list')
     }
   }
 
-  return (
-    <div className="flow-page calendar-page">
-      <PageHeader title="진료 캘린더" onBack={onBack} />
-      <section className="flow-intro">
-        <p className="eyebrow">병원 일정을 한눈에</p>
-        <h1>진료와 수술 일정을<br />잊지 않게 기록하세요.</h1>
-        <p>날짜를 선택하면 그날의 예약 정보를 확인하고 등록할 수 있어요.</p>
-      </section>
+  function handleViewBack() {
+    if (view === 'month') onBack()
+    else setView(view === 'form' ? 'list' : 'month')
+  }
 
-      <section className="calendar-card" aria-label="월간 진료 일정">
+  return (
+    <div key={view} className="flow-page calendar-page page-transition">
+      <PageHeader title={view === 'month' ? '진료 캘린더' : view === 'list' ? '선택한 날짜의 일정' : editingAppointment ? '일정 수정' : '새 일정 등록'} onBack={handleViewBack} />
+      {view === 'month' && <section className="flow-intro">
+        <p className="eyebrow">병원 일정을 한눈에</p>
+        <h1>진료와 수술 일정을<br />확인하세요.</h1>
+        <p>날짜를 고른 뒤 일정 확인이나 등록을 선택할 수 있어요.</p>
+      </section>}
+
+      {view === 'month' && <section className="calendar-card" aria-label="월간 진료 일정">
         <div className="calendar-card__header">
           <button className="icon-button" type="button" aria-label="이전 달" onClick={() => moveMonth(-1)}><ChevronLeft aria-hidden="true" /></button>
           <div><h2 aria-live="polite">{monthLabel}</h2><button type="button" onClick={() => selectDate(parseDateKey(todayDateKey()))}>오늘</button></div>
@@ -104,23 +108,29 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
             )
           })}
         </div>
-      </section>
+      </section>}
 
-      <section className="appointment-section">
+      {view === 'month' && <div className="screen-summary">
+        <span><small>선택한 날짜</small><strong>{selectedDateLabel}</strong></span>
+        <span className="screen-summary__actions">
+          <button className="button button--quiet" type="button" onClick={() => setView('list')}>일정 보기</button>
+          <button className="button button--primary" type="button" onClick={openNewAppointment}><Plus aria-hidden="true" /> 등록</button>
+        </span>
+      </div>}
+
+      {view === 'form' && <AppointmentForm
+        key={editingAppointment?.id ?? `new-${selectedDate}`}
+        date={selectedDate}
+        appointment={editingAppointment}
+        onSave={saveAppointment}
+        onCancel={() => { setEditingAppointment(null); setView('list') }}
+      />}
+
+      {view === 'list' && <section className="appointment-section">
         <div className="section-heading">
           <div><p className="eyebrow">선택한 날짜</p><h2>{selectedDateLabel}</h2></div>
           <button className="button button--secondary" type="button" onClick={openNewAppointment}><Plus aria-hidden="true" /> 일정 등록</button>
         </div>
-
-        {formOpen && (
-          <AppointmentForm
-            key={editingAppointment?.id ?? `new-${selectedDate}`}
-            date={selectedDate}
-            appointment={editingAppointment}
-            onSave={saveAppointment}
-            onCancel={() => { setEditingAppointment(null); setFormOpen(false) }}
-          />
-        )}
 
         {selectedAppointments.length === 0 ? (
           <div className="appointment-empty"><CalendarDays aria-hidden="true" /><p><strong>등록된 병원 일정이 없어요.</strong><small>진료, 검사, 수술 일정을 미리 적어 두세요.</small></p></div>
@@ -138,16 +148,16 @@ export function Calendar({ appointments, onSave, onDelete, onPrepare, onBack }: 
                 </p>
                 <div className="appointment-card__actions">
                   {appointment.status === 'scheduled' && <button type="button" onClick={() => onPrepare(appointment.id)}><ClipboardPen aria-hidden="true" /> {appointment.preparation?.status === 'ready' ? '카드 보기' : '진료 준비'}</button>}
-                  <button type="button" onClick={() => { setEditingAppointment(appointment); setFormOpen(true) }}><Pencil aria-hidden="true" /> 수정</button>
+                  <button type="button" onClick={() => { setEditingAppointment(appointment); setView('form') }}><Pencil aria-hidden="true" /> 수정</button>
                   <button type="button" className="is-danger" onClick={() => deleteAppointment(appointment)}><Trash2 aria-hidden="true" /> 삭제</button>
                 </div>
               </article>
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
-      <p className="calendar-privacy-note"><MapPin aria-hidden="true" /> 등록한 일정은 현재 브라우저 또는 로그인한 내 계정에만 저장됩니다.</p>
+      {view === 'month' && <p className="calendar-privacy-note"><MapPin aria-hidden="true" /> 등록한 일정은 현재 브라우저 또는 로그인한 내 계정에만 저장됩니다.</p>}
     </div>
   )
 }

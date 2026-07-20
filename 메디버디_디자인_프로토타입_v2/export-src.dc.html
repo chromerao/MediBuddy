@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail" data-bg-color="#35906a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#35906a"></rect>
+    <path d="M300 400h160l60-140 120 280 60-140h200" fill="none" stroke="#f0faf4" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+</template>
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-42ad1c37-7fd3-474e-9d32-b4fc139fcf43/styles.css">
+  <script src="_ds/nocturne-42ad1c37-7fd3-474e-9d32-b4fc139fcf43/_ds_bundle.js"></script>
+  <style>
+    :root{--color-bg:#eef6f1;--color-surface:#fcfefd;--color-text:#28302b;--color-accent:#35906a;--color-accent-2:#5b9c82;--color-divider:color-mix(in srgb,#28302b 14%,transparent);
+      --color-accent-100:#f0faf4;--color-accent-200:#dcf3e6;--color-accent-300:#bce5cf;--color-accent-400:#8ccfab;--color-accent-500:#55b184;--color-accent-600:#3a9169;--color-accent-700:#2c7050;--color-accent-800:#1f5039;--color-accent-900:#dff0e7;
+      --shadow-sm:0 0 0 1px #e2ede6;--shadow-md:0 0 0 1px #e2ede6,0 6px 18px rgba(40,48,43,.08);--shadow-lg:0 0 0 1px #c9ddd1,0 16px 40px rgba(40,48,43,.14)}
+    body{margin:0;background:var(--color-bg)}
+    .tag-accent{background:var(--color-accent-200);color:var(--color-accent-700)}
+    .tag-neutral{background:var(--color-neutral-200);color:var(--color-neutral-700)}
+    .tag-outline{border-color:var(--color-accent-600);color:var(--color-accent-600)}
+    .card{box-shadow:0 0 0 1px #e7f0ea}
+    .tag{white-space:nowrap}
+    .btn-ghost{white-space:nowrap}
+    .card-kicker{white-space:nowrap}
+    a{color:var(--color-accent)} a:hover{color:var(--color-accent-300)}
+    @keyframes mbPulse{0%{box-shadow:0 0 0 0 rgba(53,144,106,.32)}100%{box-shadow:0 0 0 30px rgba(145,132,217,0)}}
+    @keyframes mbSpin{to{transform:rotate(360deg)}}
+    @keyframes mbBlink{0%,100%{opacity:1}50%{opacity:.25}}
+    @keyframes mbUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  </style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;gap:40px;padding:36px 32px 56px;background:radial-gradient(900px 520px at 20% 0%, var(--color-accent-200), var(--color-bg) 72%);color:var(--color-text);font-family:var(--font-body);word-break:keep-all;overflow-wrap:break-word">
+  <sc-if value="{{ showGuide }}" hint-placeholder-val="{{ true }}">
+    <div style="width:264px;flex:none;position:sticky;top:36px;display:flex;flex-direction:column;gap:14px;padding-top:8px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent);margin-bottom:6px">MediBuddy · Prototype</div>
+        <h4 style="margin:0 0 4px">메디버디</h4>
+        <p class="text-muted" style="font-size:12.5px;margin:0">진료 전 준비가 진료 후 기억을 채점하는 AI 진료 동행 서비스 — 클릭으로 화면을 이동하며 시연하세요.</p>
+      </div>
+      <div class="seg" style="align-self:flex-start">
+        <button onClick="{{ setDiabetes }}" style="{{ segDia }}">당뇨 · 김순자</button>
+        <button onClick="{{ setHyper }}" style="{{ segHyp }}">고혈압 · 박영호</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ guideSteps }}" as="s" hint-placeholder-count="9">
+          <button onClick="{{ s.go }}" style="display:flex;align-items:center;gap:10px;text-align:left;background:{{ s.bg }};border:none;border-radius:var(--radius-md);padding:8px 10px;cursor:pointer;color:{{ s.color }};font:inherit;font-size:13px" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+            <span style="width:20px;height:20px;flex:none;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;border:1px solid {{ s.dot }};color:{{ s.dot }}">{{ s.n }}</span>
+            <span>{{ s.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <button class="btn btn-secondary" onClick="{{ resetDemo }}" style="align-self:flex-start;font-size:12.5px">처음부터 다시</button>
+    </div>
+  </sc-if>
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ false }}" hint-size="402px,874px">
+    <div style="height:100%;display:flex;flex-direction:column;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);padding-top:62px;box-sizing:border-box;zoom:{{ zoomVal }}">
+
+      <sc-if value="{{ isOnboard }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:0 28px 60px;animation:mbUp .4s ease">
+          <div style="width:64px;height:64px;border-radius:20px;border:1.5px solid var(--color-accent);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"></path></svg>
+          </div>
+          <h2 style="font-size:34px;line-height:1.18;margin:0">진료 전 준비가,<br>진료 후 기억이 됩니다</h2>
+          <p class="text-muted" style="font-size:17px;line-height:1.5;margin:0 0 18px">메디버디가 진료 준비부터 확인까지<br>곁에서 함께할게요.</p>
+          <button class="btn btn-primary btn-block" onClick="{{ goHome }}" style="min-height:60px;font-size:19px">제가 직접 사용해요</button>
+          <button class="btn btn-secondary btn-block" onClick="{{ goFamily }}" style="min-height:60px;font-size:19px">가족과 함께 사용해요</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;overflow:auto;padding:10px 22px 110px;display:flex;flex-direction:column;gap:16px;animation:mbUp .35s ease">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div>
+              <div style="font-size:14px;color:var(--color-accent-700)">{{ today }}</div>
+              <h2 style="font-size:29px;margin:2px 0 0">안녕하세요, {{ p.greet }}</h2>
+            </div>
+            <button onClick="{{ goSettings }}" aria-label="설정" style="background:none;border:none;cursor:pointer;color:var(--color-neutral-600);padding:6px" style-hover="color:var(--color-accent)">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+          </div>
+          <sc-if value="{{ showBanner }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ goPre1 }}" style="display:flex;align-items:flex-start;gap:12px;text-align:left;font:inherit;padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--color-accent-300);background:var(--color-accent-100);cursor:pointer;color:inherit">
+              <svg style="flex:none;margin-top:2px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-700)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+              <span style="flex:1;font-size:15.5px;line-height:1.5">다음 진료까지 <b style="color:var(--color-accent-700)">{{ p.dday }}</b> — 증상을 미리 말씀해 주시면 질문 카드를 준비해 드릴게요.</span>
+              <span onClick="{{ dismissBanner }}" style="flex:none;color:var(--color-neutral-600);padding:2px;display:flex">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+              </span>
+            </button>
+          </sc-if>
+          <div class="card elev-sm" style="padding:18px;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="tag tag-accent" style="font-size:13px;padding:4px 12px">{{ p.dday }}</span>
+              <span class="card-kicker" style="font-size:11px">다음 진료</span>
+            </div>
+            <div style="font-size:20px;font-weight:500">{{ p.appt }}</div>
+            <div class="text-muted" style="font-size:15px">{{ p.clinic }}</div>
+          </div>
+          <button class="btn btn-primary btn-block" onClick="{{ goPre1 }}" style="min-height:64px;font-size:20px;gap:10px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v10"></path><rect x="8" y="2" width="8" height="13" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v4"></path></svg>
+            진료 준비 시작하기
+          </button>
+          <div class="card" style="padding:16px;gap:10px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <span class="card-kicker">{{ p.metricLabel }}</span>
+              <span class="text-muted" style="font-size:12px">최근 7회</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:14px">
+              <div><span style="font-size:34px;font-weight:500">{{ p.metricVal }}</span><span class="text-muted" style="font-size:14px;margin-left:4px">{{ p.metricUnit }}</span></div>
+              <svg width="120" height="36" viewBox="0 0 120 36" style="margin-bottom:6px"><polyline points="{{ sparkPts }}" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            </div>
+            <div class="text-muted" style="font-size:14px">{{ p.metricNote }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h6 style="color:var(--color-neutral-600);margin:0">오늘의 실천</h6>
+            <sc-for list="{{ tasksPreview }}" as="t" hint-placeholder-count="2">
+              <button onClick="{{ t.toggle }}" style="display:flex;align-items:center;gap:12px;background:var(--color-surface);border:none;border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;color:inherit;font:inherit;text-align:left" style-hover="background:var(--color-accent-100)">
+                <span style="width:26px;height:26px;flex:none;border-radius:8px;border:1.5px solid {{ t.bd }};background:{{ t.bg }};display:inline-flex;align-items:center;justify-content:center">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ t.ck }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5 11-11"></path></svg>
+                </span>
+                <span style="font-size:16.5px;color:{{ t.color }};text-decoration:{{ t.deco }}">{{ t.text }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPre1 }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;padding:6px 22px 40px;animation:mbUp .35s ease">
+          <button class="btn btn-ghost" onClick="{{ goHome }}" style="align-self:flex-start;font-size:15px">← 홈으로</button>
+          <div style="margin-top:14px">
+            <span class="card-kicker">① 진료 전</span>
+            <h2 style="font-size:28px;margin:6px 0 4px">요즘 어디가<br>불편하세요?</h2>
+            <p class="text-muted" style="font-size:16px">말씀해 주시면 제가 정리해 드릴게요.</p>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+            <button onClick="{{ startListen }}" style="width:112px;height:112px;border-radius:50%;border:1.5px solid var(--color-accent);background:color-mix(in srgb, var(--color-accent) 10%, transparent);cursor:pointer;display:flex;align-items:center;justify-content:center;animation:{{ micAnim }}">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v10"></path><rect x="8" y="2" width="8" height="13" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v4"></path></svg>
+            </button>
+            <div class="text-muted" style="font-size:15px">{{ micHint }}</div>
+            <sc-if value="{{ hasTranscript }}" hint-placeholder-val="{{ false }}">
+              <div class="card elev-sm" style="width:100%;padding:18px;gap:6px;animation:mbUp .4s ease">
+                <span class="card-kicker">이렇게 들었어요</span>
+                <div style="font-size:20px;line-height:1.45">“{{ p.symptom }}”</div>
+              </div>
+              <button class="btn btn-primary btn-block" onClick="{{ confirmSymptom }}" style="min-height:60px;font-size:19px">네, 맞아요 — 정리해 주세요</button>
+            </sc-if>
+          </div>
+          <div class="text-muted" style="font-size:13px;line-height:1.5;text-align:center">가슴 통증, 호흡 곤란 같은 응급 증상은<br>앱 대신 지금 바로 119에 연락하세요.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isThinking }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding-bottom:80px">
+          <div style="width:52px;height:52px;border-radius:50%;border:3px solid var(--color-accent-900);border-top-color:var(--color-accent);animation:mbSpin .9s linear infinite"></div>
+          <div style="font-size:18px">말씀을 정리하고 있어요…</div>
+          <div class="text-muted" style="font-size:14px">상태 카드 1장과 질문 3개를 만들어요</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPre2 }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:6px 22px 40px;display:flex;flex-direction:column;gap:14px;animation:mbUp .35s ease">
+          <button class="btn btn-ghost" onClick="{{ goPre1 }}" style="align-self:flex-start;font-size:15px">← 다시 말하기</button>
+          <h2 style="font-size:26px;margin:0">진료 준비가 끝났어요</h2>
+          <div class="card elev-md" style="padding:18px;gap:10px;border:1px solid var(--color-accent-300)">
+            <span class="card-kicker">환자 상태 카드 · 의사 선생님께 보여주세요</span>
+            <div style="font-size:19px;font-weight:500">{{ p.name }} ({{ p.age }}) · {{ p.tag }}</div>
+            <sc-for list="{{ cardRows }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;gap:12px;font-size:15.5px;line-height:1.45">
+                <span style="flex:none;width:78px;color:var(--color-neutral-500)">{{ r.k }}</span>
+                <span>{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:18px;gap:12px">
+            <span class="card-kicker">오늘 여쭤볼 질문 3가지</span>
+            <sc-for list="{{ questions }}" as="q" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--color-accent);color:var(--color-accent);font-size:13px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px">{{ q.n }}</span>
+                <span style="font-size:16.5px;line-height:1.45">{{ q.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div class="text-muted" style="font-size:13.5px;display:flex;gap:8px;align-items:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"></path></svg>
+            가족 공유 계정에도 함께 전달됐어요
+          </div>
+          <div class="text-muted" style="font-size:13px;line-height:1.5;display:flex;gap:8px;align-items:flex-start">
+            <svg style="flex:none;margin-top:2px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-700)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            근거: 질병관리청 · 국가건강정보포털 문서. 메디버디는 진단이나 처방을 판단하지 않아요.
+          </div>
+          <button class="btn btn-primary btn-block" onClick="{{ goVisit }}" style="min-height:60px;font-size:19px">② 진료실에 들어가요</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVisit }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;padding:6px 22px 40px;gap:14px;animation:mbUp .35s ease">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="card-kicker">② 진료 중</span>
+            <span class="tag tag-neutral" style="font-size:12px">AI 호출 없음 · 카드와 녹음만</span>
+          </div>
+          <div class="card elev-sm" style="padding:18px;gap:12px;flex:1;overflow:auto">
+            <span class="card-kicker">질문 카드</span>
+            <sc-for list="{{ questions }}" as="q" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0">
+                <span style="flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--color-accent);color:var(--color-accent);font-size:14px;display:inline-flex;align-items:center;justify-content:center">{{ q.n }}</span>
+                <span style="font-size:18px;line-height:1.45">{{ q.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showConsent }}" hint-placeholder-val="{{ false }}">
+            <div class="card elev-md" style="padding:16px;gap:8px;border:1px solid var(--color-accent-300);animation:mbUp .3s ease">
+              <span class="card-kicker">녹음 전 확인</span>
+              <div style="font-size:16px;line-height:1.5">녹음을 시작하기 전에 의료진께 말씀해 주세요. 환자 본인의 진료 대화 녹음이며, 확인이 끝나면 자동으로 파기돼요.</div>
+              <button class="btn btn-primary btn-block" onClick="{{ consentOk }}" style="min-height:52px;font-size:17px">의료진에게 알렸어요 — 녹음 시작</button>
+            </div>
+          </sc-if>
+          <div class="card" style="padding:16px;flex-direction:row;align-items:center;gap:14px">
+            <button onClick="{{ toggleRec }}" style="width:62px;height:62px;flex:none;border-radius:50%;border:1.5px solid var(--color-accent);background:{{ recBg }};cursor:pointer;display:flex;align-items:center;justify-content:center;animation:{{ recAnim }}">
+              <div style="width:{{ recDotSize }};height:{{ recDotSize }};border-radius:{{ recDotRadius }};background:var(--color-accent);transition:all .25s"></div>
+            </button>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:17px;font-weight:500;display:flex;align-items:center;gap:8px">
+                <sc-if value="{{ recording }}" hint-placeholder-val="{{ false }}">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);animation:mbBlink 1.2s infinite"></span>
+                </sc-if>
+                {{ recLabel }}
+              </div>
+              <div class="text-muted" style="font-size:14px">{{ recTime }} · 확인이 끝나면 자동 파기돼요</div>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" onClick="{{ endVisit }}" disabled="{{ endDisabled }}" style="min-height:60px;font-size:19px">진료 종료 — 기억 확인하기</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;padding:6px 22px 40px;gap:14px;animation:mbUp .35s ease">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="card-kicker">③ 진료 후 · 확인 퀴즈</span>
+            <span class="text-muted" style="font-size:14px">{{ quizStep }} / 3</span>
+          </div>
+          <div style="height:4px;border-radius:2px;background:var(--color-accent-200);overflow:hidden">
+            <div style="height:100%;width:{{ quizPct }};background:var(--color-accent);transition:width .3s;border-radius:2px"></div>
+          </div>
+          <h3 style="font-size:23px;line-height:1.35;margin:10px 0 4px">{{ q.q }}</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ quizOpts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font:inherit;font-size:17px;line-height:1.4;color:{{ o.color }};padding:16px 18px;border-radius:var(--radius-md);border:1.5px solid {{ o.bd }};background:{{ o.bg }};cursor:pointer;transition:all .2s" style-hover="border-color:var(--color-accent-600)">
+                <span>{{ o.label }}</span>
+                <span style="flex:none;font-size:13px;color:{{ o.markColor }}">{{ o.mark }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ fbShow }}" hint-placeholder-val="{{ false }}">
+            <div class="card elev-sm" style="padding:16px;gap:6px;animation:mbUp .3s ease">
+              <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:{{ fbTagColor }}">{{ fbTag }}</span>
+              <div style="font-size:16px;line-height:1.5">{{ fbText }}</div>
+              <div class="text-muted" style="font-size:13px">{{ fbCite }}</div>
+            </div>
+            <button class="btn btn-primary btn-block" onClick="{{ nextQuiz }}" style="min-height:58px;font-size:19px;margin-top:auto">{{ nextLabel }}</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:6px 22px 40px;display:flex;flex-direction:column;gap:14px;animation:mbUp .35s ease">
+          <span class="card-kicker">③ 확인이 끝났어요</span>
+          <h2 style="font-size:26px;margin:0">오늘 진료,<br>이렇게 기억하시면 돼요</h2>
+          <sc-for list="{{ resultGroups }}" as="g" hint-placeholder-count="3">
+            <div class="card" style="padding:16px;gap:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="tag {{ g.cls }}" style="font-size:12px">{{ g.title }}</span>
+                <span class="text-muted" style="font-size:13px">{{ g.n }}개</span>
+              </div>
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+                <div style="font-size:16px;line-height:1.5">{{ it.text }}</div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--color-divider)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+            <span class="text-muted" style="font-size:14px;line-height:1.4">진료 녹음 원본은 방금 파기되었어요.<br>서버에 남지 않아요.</span>
+          </div>
+          <button class="btn btn-primary btn-block" onClick="{{ goNotebook }}" style="min-height:60px;font-size:19px">④ 실천 항목으로 옮기기</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotebook }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:10px 22px 110px;display:flex;flex-direction:column;gap:14px;animation:mbUp .35s ease">
+          <div>
+            <span class="card-kicker">④ 일상</span>
+            <h2 style="font-size:27px;margin:4px 0 0">디지털 의료수첩</h2>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h6 style="color:var(--color-neutral-600);margin:0">이번 진료의 실천 항목</h6>
+            <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.toggle }}" style="display:flex;align-items:center;gap:12px;background:var(--color-surface);border:none;border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;color:inherit;font:inherit;text-align:left" style-hover="background:var(--color-accent-100)">
+                <span style="width:26px;height:26px;flex:none;border-radius:8px;border:1.5px solid {{ t.bd }};background:{{ t.bg }};display:inline-flex;align-items:center;justify-content:center">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ t.ck }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5 11-11"></path></svg>
+                </span>
+                <span style="font-size:16.5px;color:{{ t.color }};text-decoration:{{ t.deco }}">{{ t.text }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:16px;gap:10px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <span class="card-kicker">{{ p.metricLabel }}</span>
+              <span class="text-muted" style="font-size:12px">최근 7회</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:14px">
+              <div><span style="font-size:32px;font-weight:500">{{ p.metricVal }}</span><span class="text-muted" style="font-size:14px;margin-left:4px">{{ p.metricUnit }}</span></div>
+              <svg width="130" height="36" viewBox="0 0 120 36" style="margin-bottom:6px"><polyline points="{{ sparkPts }}" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            </div>
+            <button class="btn btn-secondary" style="justify-content:flex-start;gap:10px;min-height:52px;font-size:15px;white-space:nowrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M12 3v10"></path><rect x="8" y="2" width="8" height="13" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v4"></path></svg>
+              한마디로 기록 — “{{ p.voiceExample }}”
+            </button>
+          </div>
+          <div class="card" style="padding:16px;gap:8px;border:1px solid var(--color-accent-300);background:var(--color-accent-100)">
+            <span class="card-kicker">보건소 연계 추천</span>
+            <div style="font-size:16.5px;font-weight:500;line-height:1.4">{{ p.publicRec }}</div>
+            <div class="text-muted" style="font-size:14px;line-height:1.5">이번 진료의 실천 항목을 바탕으로 가까운 무료 프로그램을 찾았어요.</div>
+            <button class="btn btn-ghost" style="align-self:flex-start;font-size:15px">자세히 보기 →</button>
+          </div>
+          <div class="text-muted" style="font-size:13.5px;line-height:1.5">여기 쌓인 기록은 다음 진료 준비에 자동으로 반영돼요.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:10px 22px 110px;display:flex;flex-direction:column;gap:14px;animation:mbUp .35s ease">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <span class="card-kicker">가족 공유</span>
+              <h2 style="font-size:26px;margin:4px 0 0;white-space:nowrap">보호자 모드</h2>
+            </div>
+            <span class="tag tag-outline" style="font-size:12px">딸 · 지은 님</span>
+          </div>
+          <div class="card elev-sm" style="padding:16px;gap:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span class="card-kicker">부모님 상태</span>
+              <span class="tag tag-accent" style="font-size:11.5px">공유 동의 완료 · 열람 전용</span>
+            </div>
+            <div style="font-size:18px;font-weight:500">{{ p.name }} ({{ p.age }}) · {{ p.tag }}</div>
+            <div class="text-muted" style="font-size:15px">다음 진료 {{ p.dday }} · {{ p.appt }}</div>
+            <div class="text-muted" style="font-size:15px">{{ p.metricLabel }} {{ p.metricVal }}{{ p.metricUnit }} · {{ p.metricNote }}</div>
+          </div>
+          <div class="card" style="padding:16px;gap:10px">
+            <span class="card-kicker">문진 대리 작성</span>
+            <p class="text-muted" style="font-size:14px;margin:0">전화로 여쭤본 증상을 대신 적어 주세요. 부모님 화면에 질문 카드로 나타나요.</p>
+            <textarea class="input" style="font-size:16px;min-height:96px" defaultValue="{{ p.familyNote }}"></textarea>
+            <button class="btn btn-primary btn-block" onClick="{{ sendFamily }}" style="min-height:56px;font-size:18px">{{ familyBtnLabel }}</button>
+            <sc-if value="{{ familySent }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:8px;align-items:center;color:var(--color-accent-700);font-size:14.5px;animation:mbUp .3s ease">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5 11-11"></path></svg>
+                질문 카드를 만들어 부모님께 보냈어요 — 종이 카드로 인쇄도 가능해요
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:10px 22px 110px;display:flex;flex-direction:column;gap:14px;animation:mbUp .35s ease">
+          <div>
+            <button class="btn btn-ghost" onClick="{{ goHome }}" style="align-self:flex-start;font-size:15px;padding-left:0">← 홈으로</button>
+            <h2 style="font-size:27px;margin:8px 0 0">설정 · 개인정보</h2>
+          </div>
+          <div class="card" style="padding:16px;gap:10px">
+            <span class="card-kicker">글자 크기</span>
+            <div class="seg" style="align-self:flex-start">
+              <button onClick="{{ setTextNormal }}" style="{{ segTxtN }}">보통</button>
+              <button onClick="{{ setTextBig }}" style="{{ segTxtB }}">크게</button>
+            </div>
+            <div class="text-muted" style="font-size:14px">화면 전체의 글자가 함께 커져요.</div>
+          </div>
+          <div class="card" style="padding:16px;gap:14px">
+            <span class="card-kicker">개인정보 보호</span>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:16px;font-weight:500">진료 녹음 자동 파기</div>
+                <div class="text-muted" style="font-size:14px;line-height:1.45">확인 퀴즈가 끝나면 원본이 즉시 삭제되고 서버에 남지 않아요.</div>
+              </div>
+              <span class="tag tag-accent" style="flex:none;font-size:11.5px;margin-top:2px">항상 켜짐</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div style="font-size:16px;font-weight:500">AI 답변 범위</div>
+              <div class="text-muted" style="font-size:14px;line-height:1.45">질병관리청 · 국가건강정보포털 근거가 있을 때만 답하고, 진단·처방은 판단하지 않아요. 근거가 없으면 “의료진에게 확인하세요”로 안내해요.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:16px;font-weight:500">가족 공유</div>
+                <div class="text-muted" style="font-size:14px">딸 지은 님 · 열람 전용</div>
+              </div>
+              <button class="btn btn-ghost" style="flex:none;font-size:14px">관리</button>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-block" onClick="{{ resetDemo }}" style="min-height:54px;font-size:16px">내 데이터 모두 삭제하기</button>
+          <div class="text-muted" style="font-size:12.5px;text-align:center">메디버디 0.1.0 · 팀 콩닥</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 18px 34px;background:color-mix(in srgb, var(--color-bg) 88%, transparent);backdrop-filter:blur(14px);border-top:1px solid var(--color-divider);display:flex;justify-content:space-around;z-index:30">
+          <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+            <button onClick="{{ tb.go }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:{{ tb.color }};font:inherit;min-width:64px;padding:4px 0">
+              <span style="display:flex" dangerouslySetInnerHTML="{{ tb.icon }}"></span>
+              <span style="font-size:12px">{{ tb.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1280, &quot;height&quot;: 990}, &quot;persona&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;당뇨 김순자&quot;, &quot;고혈압 박영호&quot;], &quot;default&quot;: &quot;당뇨 김순자&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;데모&quot;}, &quot;showGuide&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;데모&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'onboard', personaKey: null, listening: false, transcript: false, recording: false, recorded: false, recSec: 0, quizIdx: 0, picked: null, outcomes: [], done: {}, familySent: false, bannerDismissed: false, showConsent: false, recConsent: false, bigText: false };
+
+  data() {
+    return {
+      diabetes: {
+        greet: '순자 님', name: '김순자', age: '71세', tag: '당뇨 재진',
+        dday: 'D-3', appt: '7월 18일 (토) 오전 10:30', clinic: '행복내과 · 김현우 원장님',
+        metricLabel: '공복 혈당', metricVal: '132', metricUnit: 'mg/dL', metricNote: '지난주 평균보다 8 높아요',
+        spark: [118, 124, 120, 131, 128, 136, 132],
+        symptom: '요즘 새벽에 발이 저릿해요',
+        voiceExample: '공복 혈당 130',
+        familyNote: '어머니가 새벽마다 발이 저릿하다고 하세요. 2주 정도 되셨대요.',
+        card: [
+          { k: '최근 증상', v: '새벽 발 저림 · 2주째' },
+          { k: '공복 혈당', v: '평균 132 mg/dL (지난주 +8)' },
+          { k: '복약', v: '메트포르민 500mg · 아침, 저녁' },
+          { k: '지난 진료', v: '4월 17일 · 용량 유지' },
+        ],
+        questions: ['발 저림이 당뇨 때문에 생긴 건가요?', '약 용량을 조정해야 하나요?', '새벽 혈당을 낮추려면 어떻게 해야 하나요?'],
+        quiz: [
+          { q: '약은 어떻게 바꾸라고 하셨어요?', opts: ['아침 약을 1알로 줄여요', '저녁에 1알 더 추가해요', '기억이 잘 안 나요'], correct: 1,
+            ok: '정확해요. 저녁 식후 1알을 추가하라고 하셨어요.', fix: '녹음을 확인해보니, 저녁 식후 1알을 추가하라고 하셨어요. 바로잡아 드렸어요.',
+            topic: '복약 변경 (저녁 1알 추가)', fixText: '복약 — “아침 감량”으로 기억하셨지만, 실제로는 저녁 1알 추가예요.' },
+          { q: '발 저림에 대해서는 뭐라고 하셨어요?', opts: ['신경 검사를 해보자고 하셨어요', '괜찮으니 지켜보자고 하셨어요', '기억이 잘 안 나요'], correct: 0,
+            ok: '맞아요. 다음 진료 때 신경 검사를 해보자고 하셨어요.', fix: '녹음을 확인해보니, 다음 진료 때 신경 검사를 해보자고 하셨어요.',
+            topic: '발 저림 — 신경 검사 예정', fixText: '발 저림 — 실제 답변은 “다음 진료 때 신경 검사”였어요.' },
+          { q: '“새벽 혈당을 낮추려면?” 질문의 답을 들으셨나요?', opts: ['네, 들었어요', '못 들은 것 같아요', '기억이 잘 안 나요'], missed: true,
+            note: '녹음을 확인했어요 — 이 질문은 답변을 받지 못하셨어요. 다음 진료 질문 카드에 다시 담아 드릴게요.',
+            missText: '“새벽 혈당 관리 방법” — 답을 듣지 못한 질문이에요. 다음 진료에 자동으로 다시 올라가요.' },
+        ],
+        tasks: ['저녁 식후 메트포르민 1알 추가', '자기 전 발 감각 확인하기', '공복 혈당 주 3회 기록하기'],
+        publicRec: '○○구 보건소 「혈당 관리 교실」 · 무료',
+      },
+      hyper: {
+        greet: '영호 님', name: '박영호', age: '68세', tag: '고혈압 재진',
+        dday: 'D-2', appt: '7월 17일 (금) 오후 2:00', clinic: '튼튼의원 · 이수진 원장님',
+        metricLabel: '아침 혈압', metricVal: '148/92', metricUnit: 'mmHg', metricNote: '목표(140/90)보다 조금 높아요',
+        spark: [142, 146, 139, 150, 144, 149, 148],
+        symptom: '아침에 뒷목이 뻐근해요',
+        voiceExample: '아침 혈압 145에 90',
+        familyNote: '아버지가 아침마다 뒷목이 뻐근하다고 하세요. 일주일쯤 되셨어요.',
+        card: [
+          { k: '최근 증상', v: '아침 뒷목 뻐근함 · 1주째' },
+          { k: '아침 혈압', v: '평균 148/92 mmHg' },
+          { k: '복약', v: '암로디핀 5mg · 아침' },
+          { k: '지난 진료', v: '5월 2일 · 용량 유지' },
+        ],
+        questions: ['뒷목 뻐근함이 혈압 때문인가요?', '약을 바꾸거나 늘려야 하나요?', '집에서 혈압은 언제 재는 게 좋은가요?'],
+        quiz: [
+          { q: '약은 어떻게 하라고 하셨어요?', opts: ['암로디핀을 10mg으로 올려요', '지금 용량을 유지해요', '기억이 잘 안 나요'], correct: 0,
+            ok: '정확해요. 암로디핀을 10mg으로 올리라고 하셨어요.', fix: '녹음을 확인해보니, 암로디핀을 10mg으로 올리라고 하셨어요. 바로잡아 드렸어요.',
+            topic: '복약 변경 (암로디핀 10mg)', fixText: '복약 — “유지”로 기억하셨지만, 실제로는 10mg 증량이에요.' },
+          { q: '혈압은 언제 재라고 하셨어요?', opts: ['아침 약 먹기 전에 재요', '저녁 식사 후에 재요', '기억이 잘 안 나요'], correct: 0,
+            ok: '맞아요. 아침 약 드시기 전에 재라고 하셨어요.', fix: '녹음을 확인해보니, 아침 약 드시기 전에 재라고 하셨어요.',
+            topic: '혈압 측정 — 아침 복약 전', fixText: '측정 시점 — 실제 답변은 “아침 약 먹기 전”이었어요.' },
+          { q: '“뒷목 뻐근함” 질문의 답을 들으셨나요?', opts: ['네, 들었어요', '못 들은 것 같아요', '기억이 잘 안 나요'], missed: true,
+            note: '녹음을 확인했어요 — 이 질문은 답변을 받지 못하셨어요. 다음 진료 질문 카드에 다시 담아 드릴게요.',
+            missText: '“뒷목 뻐근함 원인” — 답을 듣지 못한 질문이에요. 다음 진료에 자동으로 다시 올라가요.' },
+        ],
+        tasks: ['암로디핀 10mg으로 변경 (내일 아침부터)', '아침 약 먹기 전 혈압 재기', '저녁 30분 걷기'],
+        publicRec: '○○구 보건소 「걷기 교실」 · 무료',
+      },
+    };
+  }
+
+  go(screen, extra) { this.setState({ screen, ...(extra || {}) }); }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._to); }
+
+  renderVals() {
+    const s = this.state;
+    const key = s.personaKey || (this.props.persona === '고혈압 박영호' ? 'hyper' : 'diabetes');
+    const p = this.data()[key];
+    const A = 'var(--color-accent)', DIM = 'var(--color-divider)';
+    const setPersona = (k) => this.setState({ personaKey: k, screen: 'home', listening: false, transcript: false, recording: false, recorded: false, recSec: 0, quizIdx: 0, picked: null, outcomes: [], done: {}, familySent: false });
+
+    const steps = [
+      ['온보딩', 'onboard'], ['홈', 'home'], ['① 진료 전 · 증상 말하기', 'pre1'], ['① 상태 카드 · 질문 3개', 'pre2'],
+      ['② 진료 중 · 녹음', 'visit'], ['③ 확인 퀴즈', 'quiz'], ['③ 정리 · 교정 · 누락', 'result'], ['④ 디지털 의료수첩', 'notebook'], ['가족 공유 (보호자)', 'family'], ['설정 · 개인정보', 'settings'],
+    ];
+    const guideSteps = steps.map(([label, sc], i) => ({
+      label, n: i + 1,
+      go: () => {
+        if (sc === 'quiz') this.setState({ screen: 'quiz', quizIdx: 0, picked: null, outcomes: [] });
+        else if (sc === 'result') this.setState({ screen: 'result', outcomes: s.outcomes.length === 3 ? s.outcomes : ['fix', 'ok', 'missed'] });
+        else if (sc === 'pre2') this.setState({ screen: 'pre2', transcript: true });
+        else this.go(sc);
+      },
+      bg: s.screen === sc ? 'color-mix(in srgb, var(--color-accent) 14%, transparent)' : 'transparent',
+      color: s.screen === sc ? 'var(--color-accent-700)' : 'var(--color-neutral-600)',
+      dot: s.screen === sc ? A : 'var(--color-neutral-700)',
+    }));
+
+    const segBase = 'white-space:nowrap;font:inherit;font-size:12.5px;padding:7px 12px;cursor:pointer;background:transparent;border:none;color:var(--color-neutral-600)';
+    const segOn = 'white-space:nowrap;font:inherit;font-size:12.5px;padding:7px 12px;cursor:pointer;background:color-mix(in srgb, var(--color-accent) 12%, transparent);border:none;color:var(--color-accent);box-shadow:inset 0 0 0 1px var(--color-accent)';
+
+    // spark
+    const sp = p.spark, mn = Math.min(...sp), mx = Math.max(...sp);
+    const sparkPts = sp.map((v, i) => `${(i / (sp.length - 1)) * 116 + 2},${32 - ((v - mn) / (mx - mn || 1)) * 26}`).join(' ');
+
+    // tasks
+    const mkTask = (t, i) => {
+      const done = !!s.done[i];
+      return {
+        text: t, toggle: () => this.setState({ done: { ...s.done, [i]: !done } }),
+        bd: done ? A : 'var(--color-neutral-600)', bg: done ? A : 'transparent',
+        ck: done ? 'var(--color-bg)' : 'transparent',
+        color: done ? 'var(--color-neutral-500)' : 'var(--color-text)',
+        deco: done ? 'line-through' : 'none',
+      };
+    };
+    const tasks = p.tasks.map(mkTask);
+
+    // quiz
+    const qi = Math.min(s.quizIdx, 2), q = p.quiz[qi];
+    const picked = s.picked;
+    const quizOpts = q.opts.map((label, i) => {
+      let bd = DIM, bg = 'var(--color-surface)', color = 'var(--color-text)', mark = '', markColor = A;
+      if (picked != null) {
+        if (q.missed) { if (i === picked) { bd = A; bg = 'color-mix(in srgb, var(--color-accent) 10%, transparent)'; mark = '내 답'; } }
+        else if (i === q.correct) { bd = A; bg = 'color-mix(in srgb, var(--color-accent) 12%, transparent)'; mark = '실제 진료 내용'; }
+        else if (i === picked) { bd = 'var(--color-neutral-600)'; color = 'var(--color-neutral-500)'; mark = '내 답'; markColor = 'var(--color-neutral-500)'; }
+        else { color = 'var(--color-neutral-600)'; }
+      }
+      return { label, bd, bg, color, mark, markColor, pick: () => {
+        if (this.state.picked != null) return;
+        const outcome = q.missed ? 'missed' : (i === q.correct ? 'ok' : 'fix');
+        this.setState({ picked: i, outcomes: [...this.state.outcomes, outcome] });
+      } };
+    });
+    const lastOutcome = s.outcomes[qi];
+    const fbMap = { ok: ['잘 기억하셨어요', 'var(--color-accent-700)', q.ok], fix: ['바로잡았어요', 'var(--color-accent-700)', q.fix], missed: ['누락을 찾았어요', 'var(--color-neutral-700)', q.note] };
+    const fb = picked != null ? fbMap[lastOutcome] : null;
+
+    // result groups
+    const outcomes = s.outcomes.length ? s.outcomes : [];
+    const groupsDef = [
+      ['ok', '잘 기억하셨어요', 'tag-accent', (item) => item.topic + ' — 정확히 기억하셨어요'],
+      ['fix', '바로잡았어요', 'tag-outline', (item) => item.fixText],
+      ['missed', '놓친 질문', 'tag-neutral', (item) => item.missText],
+    ];
+    const resultGroups = groupsDef.map(([type, title, cls, fmt]) => {
+      const items = p.quiz.filter((item, i) => outcomes[i] === type).map((item) => ({ text: fmt(item) }));
+      return { title, cls, n: items.length, items };
+    }).filter((g) => g.n > 0);
+
+    // recording
+    const mm = String(Math.floor(s.recSec / 60)).padStart(1, '0'), ss = String(s.recSec % 60).padStart(2, '0');
+    const startRec = () => { this._t = setInterval(() => this.setState((st) => ({ recSec: st.recSec + 1 })), 1000); this.setState({ recording: true, showConsent: false, recConsent: true }); };
+    const toggleRec = () => {
+      if (s.recording) { clearInterval(this._t); this.setState({ recording: false, recorded: true }); }
+      else if (!s.recConsent) { this.setState({ showConsent: true }); }
+      else startRec();
+    };
+
+    const tabIcon = (d) => ({ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${d}</svg>` });
+    const tabsDef = [
+      ['홈', 'home', '<path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path>'],
+      ['진료 준비', 'pre1', '<path d="M12 3v10"></path><rect x="8" y="2" width="8" height="13" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v4"></path>'],
+      ['의료수첩', 'notebook', '<rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path>'],
+      ['가족', 'family', '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>'],
+    ];
+    const tabs = tabsDef.map(([label, sc, d]) => ({
+      label, icon: tabIcon(d), go: () => this.go(sc, sc === 'pre1' ? { listening: false, transcript: false } : {}),
+      color: s.screen === sc ? A : 'var(--color-neutral-500)',
+    }));
+
+    return {
+      p, showGuide: this.props.showGuide ?? true, guideSteps,
+      setDiabetes: () => setPersona('diabetes'), setHyper: () => setPersona('hyper'),
+      segDia: key === 'diabetes' ? segOn : segBase, segHyp: key === 'hyper' ? segOn : segBase,
+      resetDemo: () => setPersona(key === 'hyper' ? 'hyper' : 'diabetes') || this.setState({ screen: 'onboard' }),
+      today: '7월 15일 수요일',
+      isOnboard: s.screen === 'onboard', isHome: s.screen === 'home', isPre1: s.screen === 'pre1', isThinking: s.screen === 'thinking',
+      isPre2: s.screen === 'pre2', isVisit: s.screen === 'visit', isQuiz: s.screen === 'quiz', isResult: s.screen === 'result',
+      isNotebook: s.screen === 'notebook', isFamily: s.screen === 'family', isSettings: s.screen === 'settings',
+      showTabs: ['home', 'notebook', 'family', 'settings'].includes(s.screen),
+      goSettings: () => this.go('settings'),
+      showBanner: !s.bannerDismissed,
+      dismissBanner: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ bannerDismissed: true }); },
+      showConsent: s.showConsent, consentOk: startRec,
+      zoomVal: s.bigText ? '1.13' : '1',
+      setTextNormal: () => this.setState({ bigText: false }), setTextBig: () => this.setState({ bigText: true }),
+      segTxtN: !s.bigText ? segOn.replace('12.5px', '15px') : segBase.replace('12.5px', '15px'),
+      segTxtB: s.bigText ? segOn.replace('12.5px', '15px') : segBase.replace('12.5px', '15px'),
+      fbCite: picked != null ? (q.missed ? '근거 · 오늘 진료 녹음 전체 대조' : '근거 · 오늘 진료 녹음 ' + ['02:41', '05:10'][qi]) : '',
+      goHome: () => this.go('home'), goFamily: () => this.go('family'), goNotebook: () => this.go('notebook'),
+      goPre1: () => this.go('pre1', { listening: false, transcript: false }),
+      goVisit: () => this.go('visit'),
+      startListen: () => { if (s.listening) return; this.setState({ listening: true }); this._to = setTimeout(() => this.setState({ transcript: true }), 1500); },
+      confirmSymptom: () => { this.go('thinking'); this._to = setTimeout(() => this.go('pre2'), 1500); },
+      micAnim: s.listening && !s.transcript ? 'mbPulse 1.3s ease-out infinite' : 'none',
+      micHint: s.transcript ? '잘 들었어요' : (s.listening ? '듣고 있어요…' : '버튼을 누르고 말씀해 주세요'),
+      hasTranscript: s.transcript,
+      cardRows: p.card, questions: p.questions.map((text, i) => ({ text, n: i + 1 })),
+      recording: s.recording, toggleRec,
+      recBg: s.recording ? 'color-mix(in srgb, var(--color-accent) 16%, transparent)' : 'transparent',
+      recAnim: s.recording ? 'mbPulse 1.5s ease-out infinite' : 'none',
+      recDotSize: s.recording ? '20px' : '24px', recDotRadius: s.recording ? '4px' : '50%',
+      recLabel: s.recording ? '녹음 중이에요' : (s.recorded ? '녹음이 끝났어요' : '녹음 시작'),
+      recTime: `${mm}:${ss}`,
+      endDisabled: !s.recorded && !s.recording,
+      endVisit: () => { clearInterval(this._t); this.setState({ recording: false, recorded: true, screen: 'quiz', quizIdx: 0, picked: null, outcomes: [] }); },
+      quizStep: qi + 1, quizPct: `${((qi + (picked != null ? 1 : 0)) / 3) * 100}%`,
+      q, quizOpts,
+      fbShow: picked != null, fbTag: fb ? fb[0] : '', fbTagColor: fb ? fb[1] : A, fbText: fb ? fb[2] : '',
+      nextLabel: qi < 2 ? '다음 질문' : '결과 보기',
+      nextQuiz: () => { if (qi < 2) this.setState({ quizIdx: qi + 1, picked: null }); else this.go('result'); },
+      resultGroups,
+      tasks, tasksPreview: tasks.slice(0, 2),
+      sparkPts,
+      familySent: s.familySent, sendFamily: () => this.setState({ familySent: true }),
+      familyBtnLabel: s.familySent ? '다시 보내기' : '질문 카드 만들어 보내기',
+    };
+  }
+}
+</script>
+</body>
+</html>

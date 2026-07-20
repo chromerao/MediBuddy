@@ -38,6 +38,7 @@ import { Family } from './screens/Family'
 import { Home } from './screens/Home'
 import { Medications } from './screens/Medications'
 import { Notebook } from './screens/Notebook'
+import type { NotebookView } from './screens/Notebook'
 import { Onboarding } from './screens/Onboarding'
 import { PrepareVisit } from './screens/PrepareVisit'
 import { ProfileSettings } from './screens/ProfileSettings'
@@ -149,6 +150,7 @@ function removeLegacyDemoData(parsed: Partial<AppState>): Partial<AppState> {
 
 export function App() {
   const [state, setState] = useState<AppState>(loadState)
+  const [notebookView, setNotebookView] = useState<NotebookView>('overview')
   const [notice, setNotice] = useState('')
   const [incomingInviteCode, setIncomingInviteCode] = useState(() => new URLSearchParams(window.location.search).get('invite'))
   const [serverInvite, setServerInvite] = useState<{ status: 'idle' | 'loading' | 'ready'; invitation: FamilyInvitation | null }>({ status: 'idle', invitation: null })
@@ -358,6 +360,7 @@ export function App() {
   }, [])
 
   function setTab(tab: Tab) {
+    if (tab !== 'notebook') setNotebookView('overview')
     setState((current) => ({ ...current, tab, step: 'home' }))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -448,6 +451,7 @@ export function App() {
   }
 
   async function prepareVisitWithAi() {
+    setState((current) => saveActivePreparation(current, 'draft'))
     setAiGeneration({ loading: true, notice: '', model: null })
     try {
       const appointment = state.appointments.find((item) => item.id === state.activePreparationAppointmentId)
@@ -687,6 +691,7 @@ export function App() {
     <>
       <AppShell
         tab={state.tab}
+        contentKey={`${state.step}-${state.tab}-${state.selectedVisitId ?? 'none'}`}
         onTabChange={setTab}
         compactContent={isFlow}
         onGoHome={() => setTab('home')}
@@ -701,7 +706,6 @@ export function App() {
           <Home
             userName={state.profile.userName}
             tasks={state.tasks}
-            healthLogs={state.healthLogs}
             appointments={state.appointments}
             medications={state.medications}
             medicationIntakes={state.medicationIntakes}
@@ -710,7 +714,10 @@ export function App() {
             onPrepare={(appointmentId) => startPreparation(state.role === 'family' ? 'family' : 'self', appointmentId)}
             onOpenCalendar={() => setStep('calendar')}
             onToggleTask={(id) => setState((current) => ({ ...current, tasks: current.tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task) }))}
-            onOpenNotebook={() => setTab('notebook')}
+            onQuickHealthLog={() => {
+              setNotebookView('record')
+              setTab('notebook')
+            }}
             llm={llm}
           />
         )}
@@ -718,6 +725,8 @@ export function App() {
           <Notebook
             tasks={state.tasks}
             healthLogs={state.healthLogs}
+            view={notebookView}
+            onViewChange={setNotebookView}
             visitRecords={state.visitRecords}
             onToggleTask={(id) => setState((current) => ({ ...current, tasks: current.tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task) }))}
             onAddLog={(text) => setState((current) => ({ ...current, healthLogs: [buildHealthLog(text), ...current.healthLogs] }))}
@@ -752,7 +761,7 @@ export function App() {
             summary={state.summary}
             familyMode={state.activeVisitRole === 'family'}
             patientName={state.profile.patientName}
-            onValueChange={(symptomInput) => setState((current) => saveActivePreparation({ ...current, symptomInput }, 'draft'))}
+            onValueChange={(symptomInput) => setState((current) => ({ ...current, symptomInput }))}
             onReview={prepareVisitWithAi}
             onCreateCard={() => setState((current) => saveActivePreparation({ ...current, step: 'summary' }, 'ready'))}
             onStartVisit={() => setState((current) => saveActivePreparation({ ...current, step: 'consent' }, 'ready'))}

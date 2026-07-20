@@ -207,15 +207,17 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
             <p>{transcript}</p>
           </section>
         )}
-        {processingState === 'ready' && <div className="processing-actions"><button className="button button--primary button--large" type="button" onClick={() => onStepChange('quiz')}>기억 확인 시작하기</button><button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
+        {processingState === 'ready' && <div className="processing-actions"><button className="button button--primary button--large" type="button" onClick={() => onStepChange('quiz')}>진료 내용 확인하기</button><button className="button button--quiet" type="button" onClick={recordAgain}>녹음이 잘못되었나요? 다시 녹음하기</button></div>}
         {isReviewError && (
           <div className="processing-actions">
             <button className="button button--primary button--large" type="button" onClick={() => runReviewGeneration(transcript)}>질문 만들기 다시 시도</button>
-            <button className="button button--secondary" type="button" onClick={() => onStepChange('results')}>글로 바꾼 내용만 저장하기</button>
-            <button className="skip-link" type="button" onClick={recordAgain}>다시 녹음하기</button>
+            <details className="secondary-actions">
+              <summary>다른 방법으로 계속하기</summary>
+              <div><button className="button button--quiet" type="button" onClick={() => onStepChange('results')}>글로 바꾼 내용만 저장하기</button><button className="button button--quiet" type="button" onClick={recordAgain}>다시 녹음하기</button></div>
+            </details>
           </div>
         )}
-        {processingState === 'error' && <div className="processing-actions">{audioRef.current && <button className="button button--primary button--large" type="button" onClick={retryTranscription}>글로 바꾸기 다시 시도</button>}<button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button></div>}
+        {processingState === 'error' && <div className="processing-actions">{audioRef.current ? <button className="button button--primary button--large" type="button" onClick={retryTranscription}>글로 바꾸기 다시 시도</button> : <button className="button button--primary button--large" type="button" onClick={recordAgain}>다시 녹음하기</button>}{audioRef.current && <button className="button button--quiet" type="button" onClick={recordAgain}>처음부터 다시 녹음하기</button>}</div>}
       </div>
     )
   }
@@ -229,7 +231,7 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
         <div className="quiz-progress"><span>{quizIndex + 1} / {quizQuestions.length}</span><div><i style={{ width: `${((quizIndex + 1) / quizQuestions.length) * 100}%` }} /></div></div>
         <section className="flow-intro">
           <SourceBadge>진료 대화로 만든 AI 질문</SourceBadge>
-          <p className="eyebrow">기억 확인</p>
+          <p className="eyebrow">진료 후 · 기억 확인</p>
           <h1>{question.question}</h1>
           <p>시험이 아니에요. 기억나는 대로 골라 주세요.</p>
         </section>
@@ -251,7 +253,7 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
     return (
       <div className="flow-page results-page">
         <section className="flow-intro">
-          <p className="eyebrow">진료 기록</p>
+          <p className="eyebrow">진료 후 · 진료 기록</p>
           <h1>글로 바꾼 진료 내용을<br />그대로 저장할 수 있어요.</h1>
           <p>기억 확인 질문은 만들지 못했어요. 진료에서 들은 내용은 아래 글과 의료진의 안내를 기준으로 확인해 주세요.</p>
         </section>
@@ -264,9 +266,9 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
           <p className="inline-error" role="alert">저장할 글이 없습니다. 다시 녹음해 주세요.</p>
         )}
         <div className="deletion-receipt"><ShieldCheck /><p><strong>원본 녹음은 앱에 저장되지 않았습니다.</strong><span>글로 바꾼 내용만 의료수첩에 저장할 수 있어요.</span></p></div>
+        {transcript && <button className="button button--quiet" type="button" onClick={recordAgain}>녹음이 잘못되었나요? 다시 녹음하기</button>}
         <div className="sticky-actions">
           {transcript && <button className="button button--primary button--large" type="button" onClick={onSaveResults}>글로 바꾼 내용 의료수첩에 저장하기</button>}
-          <button className="button button--secondary" type="button" onClick={recordAgain}>다시 녹음하기</button>
         </div>
       </div>
     )
@@ -277,7 +279,7 @@ export function VisitFlow({ step, summary, consented, answers, transcript, trans
   return (
     <div className="flow-page results-page">
       <section className="flow-intro">
-        <p className="eyebrow">기억 확인 완료</p>
+        <p className="eyebrow">진료 후 · 기억 확인 완료</p>
         <h1>오늘 진료 내용을<br />정리했어요.</h1>
         <p>기억한 내용과 다시 확인할 내용을 나눠 보았어요.</p>
       </section>

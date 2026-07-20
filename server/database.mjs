@@ -7,7 +7,9 @@ import { buildSharedFamilyBundle } from './familySharing.mjs'
 
 const scryptAsync = promisify(scrypt)
 const sessionMaxAgeSeconds = 60 * 60 * 24 * 30
-const configuredPath = process.env.DATABASE_PATH?.trim() || './data/medibuddy.sqlite'
+const railwayVolumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim()
+const configuredPath = process.env.DATABASE_PATH?.trim()
+  || (railwayVolumePath ? path.join(railwayVolumePath, 'medibuddy.sqlite') : './data/medibuddy.sqlite')
 export const databasePath = configuredPath === ':memory:' ? ':memory:' : path.resolve(process.cwd(), configuredPath)
 
 if (databasePath !== ':memory:') fs.mkdirSync(path.dirname(databasePath), { recursive: true })

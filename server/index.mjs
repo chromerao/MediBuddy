@@ -47,7 +47,7 @@ import {
 } from './database.mjs'
 
 const app = express()
-const port = Number(process.env.API_PORT ?? 8787)
+const port = Number(process.env.PORT ?? process.env.API_PORT ?? 8787)
 const model = process.env.OPENAI_MODEL?.trim() || 'gpt-5-mini'
 const transcriptionModel = process.env.OPENAI_TRANSCRIBE_MODEL?.trim() || 'gpt-4o-mini-transcribe'
 const hasApiKey = Boolean(process.env.OPENAI_API_KEY?.trim())
@@ -130,6 +130,9 @@ const authRateLimit = createRateLimit(20)
 const aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 40)
 
 app.disable('x-powered-by')
+// 리버스 프록시(Nginx·Cloudflare Tunnel 등) 뒤에서 실행할 때 TRUST_PROXY=true로 설정하면
+// X-Forwarded-For 기준의 실제 클라이언트 IP로 요청 제한이 동작한다.
+if (process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1)
 app.use(express.json({ limit: '2mb' }))
 app.use('/api/auth', authRateLimit)
 app.use('/api/ai', aiRateLimit, aiDailyQuota)
