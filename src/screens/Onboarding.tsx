@@ -54,20 +54,21 @@ export function Onboarding({ role, profile, onRoleChange, onProfileChange, onSta
               </button>
             </div>
           </section>
-          <button className="button button--primary button--large" type="button" onClick={() => setStage('profile')}>내 정보 등록하기 <ArrowRight aria-hidden="true" /></button>
+          <button className="button button--primary button--large" type="button" onClick={() => setStage('profile')}>{role === 'self' ? '내 정보 등록하기' : '가족 정보 등록하기'} <ArrowRight aria-hidden="true" /></button>
         </>
       ) : (
         <form className="onboarding-profile" onSubmit={submitProfile}>
           <section className="onboarding__hero onboarding__hero--compact">
             <span className="hero-mark hero-mark--small" aria-hidden="true"><Users size={34} /></span>
             <p className="eyebrow">나에게 맞는 메디버디</p>
-            <h1>{role === 'self' ? '어떻게 불러드릴까요?' : '누구의 진료를 준비할까요?'}</h1>
-            <p>입력한 정보는 로그인 전에는 이 브라우저에만 저장됩니다.</p>
+            <h1>{role === 'self' ? '어떻게 불러드릴까요?' : '누구의 진료를 준비하시나요?'}</h1>
+            <p>{role === 'self' ? '사용하실 분의 이름을 적어 주세요.' : '병원에서 진료를 받으실 가족의 이름을 적어 주세요.'}</p>
           </section>
           <ProfileForm role={role} profile={profile} onChange={onProfileChange} idPrefix="onboarding" />
+          <p className="profile-storage-note">입력한 정보는 로그인 전에는 이 브라우저에만 저장됩니다.</p>
           <div className="onboarding-profile__actions">
             <button className="button button--secondary" type="button" onClick={() => setStage('role')}><ArrowLeft aria-hidden="true" /> 이전</button>
-            <button className="button button--primary" type="submit" disabled={!isProfileComplete(profile, role)}>등록하고 시작하기 <Check aria-hidden="true" /></button>
+            <button className="button button--primary" type="submit" disabled={!isProfileComplete(profile, role)}>{role === 'family' ? (profile.patientName.trim() ? `${profile.patientName.trim()} 님 진료 준비하기` : '가족 진료 준비하기') : '등록하고 시작하기'} <Check aria-hidden="true" /></button>
           </div>
         </form>
       )}

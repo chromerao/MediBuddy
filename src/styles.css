@@ -192,6 +192,7 @@ small { font-size: 15px; line-height: 1.5; }
 .onboarding-progress span.is-current { color: var(--action-text); border-color: var(--action-border); background: var(--action-bg); }
 .onboarding-progress i { height: 3px; flex: 1; background: var(--border); }
 .onboarding-profile { display: grid; gap: 24px; }
+.profile-storage-note { margin-top: -10px; color: var(--text-soft); font-size: 14px; text-align: center; }
 .onboarding-profile__actions { display: grid; grid-template-columns: .7fr 1.3fr; gap: 10px; }
 .profile-form-fields { display: grid; gap: 16px; }
 .profile-form-fields > label { display: grid; gap: 7px; font-weight: 700; }
